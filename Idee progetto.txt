@@ -2,3 +2,5 @@
 
 1) data un immagine di una persona dire età, sesso, espressione (felice, triste, ecc)
 2) risolutore sudoku
+
+link dataset sudoku: https://github.com/wichtounet/sudoku_dataset/tree/master
