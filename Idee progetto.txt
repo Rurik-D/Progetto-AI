@@ -1,6 +1,13 @@
-								IDEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+Idea:
 
-1) data un immagine di una persona dire età, sesso, espressione (felice, triste, ecc)
-2) risolutore sudoku
+1) Data un immagine x, vedere se è un sudoku
+2) Individuiamo la posizione della griglia e delle caselle
+3) Controlliamo le singole caselle. Se c'è un numero:
+	3.1. usiamo modello per riconoscere il numero e inseriamo nella matrice
+4) abbiamo due opzioni:
+	4.1. usiamo algoritmo per completare il sudoku 
+	4.2. creaiamo modello per risolverlo grazie al dataset
+5) Prendiamo la matrice e la copiamo sull'immagine del sudoku
+
 
 link dataset sudoku: https://github.com/wichtounet/sudoku_dataset/tree/master
