@@ -11,3 +11,5 @@ Idea:
 
 
 link dataset sudoku: https://github.com/wichtounet/sudoku_dataset/tree/master
+
+ https://github.com/wichtounet/sudoku_dataset/tree/master
