@@ -1,0 +1,32 @@
+
+
+1) GUI
+2) Modello per riconoscimento dei numeri
+3) Modello per riconoscimento dei sudoku
+4) Elaborazione dell'immagine del sudoku
+5) Riconoscimento dei numeri all'interno della griglia usando il modello (2)
+6) Riempimento dell'immagine con numeri della soluzione oppure creazione di una griglia nuova con la soluzione
+
+########################
+
+Mercoledì 29:
+ 
+Manu
+	- Bozze GUI
+	- Primo prototipo Tkinter
+
+
+Peppe-Ale
+	- Creare modello (2)
+	- Trovare immagini miste che non sono dei sudoku
+	- Creare modello (3)
+
+
+
+
+
+
+
+
+
+
