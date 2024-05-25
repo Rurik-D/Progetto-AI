@@ -15,9 +15,14 @@ def unpickle(file):
 
 qmnist = unpickle("MNIST-120k")
 data = qmnist['data']
-cv2.imwrite("C:\\Users\giuse\Desktop\Progetto-AI\prova.jpg", data[40000])
-exit()
+#cv2.imwrite("C:\\Users\giuse\Desktop\Progetto-AI\prova.jpg", data[53050])
+#exit()
+cv2.imshow("Data[0]",data[0])
+cv2.waitKey(0)
 data = data.reshape(-1,1, 28, 28)
+#print(data[0])
+
+#exit()
 labels = qmnist['labels']
 def image_attr(img):
     rows = img.shape[0]
@@ -25,11 +30,10 @@ def image_attr(img):
     return rows, cols
 
 rows_img, cols_img = image_attr(data[0])
-print(data.shape)
-print(labels.shape)
+
 #exit()
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = ("cuda" if torch.cuda.is_available() else "cpu")
 
 #Converti gli array numpy in tensori PyTorch
 data_tensor = torch.from_numpy(data).float().to(device)
@@ -38,7 +42,7 @@ labels_tensor = torch.from_numpy(labels.squeeze()).long().to(device)
  
 # Dividi i dati in training e test set
 data_train, data_test, labels_train, labels_test = train_test_split(
-    data_tensor, labels_tensor, test_size=0.2, random_state=42
+    data_tensor, labels_tensor, test_size=0.2, random_state=0
 )
 
 # Crea i TensorDataset per training e test set
@@ -46,14 +50,14 @@ train_dataset = TensorDataset(data_train, labels_train)
 test_dataset = TensorDataset(data_test, labels_test)
 
 # define the hyperparameters
-epochs = 3
-batch_size = 32
-learning_rate = 0.001
+epochs = 10
+batch_size = 200
+learning_rate = 0.0001
 
 # Crea DataLoader per gestire i batch
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-print(len(train_loader))
+
 #exit()
 class OurCNN(nn.Module):
     def __init__(self):
@@ -93,6 +97,7 @@ optimizer = torch.optim.AdamW(model.parameters(),lr=learning_rate)
 
 metric = torchmetrics.Accuracy(task='multiclass',num_classes=10).to(device)
 
+#exit()
 # defining the training loop
 def train_loop(dataloader,model,loss_fn,optimizer):
     size = len(dataloader)

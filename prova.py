@@ -1,9 +1,10 @@
 
 import torch
 from torch import nn
-from torchvision.transforms import ToTensor, Resize
+from torchvision import transforms
 from PIL import Image
 import matplotlib.pyplot as plt
+import numpy as np
 # Sposta il tensore sull'hardware appropriato (CPU o GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class OurCNN(nn.Module):
@@ -36,13 +37,15 @@ model.eval()
 image_path = "C:\\Users\giuse\Desktop\Progetto-AI\prova.jpg"
 image = Image.open(image_path)
 
+
 # Applica le trasformazioni all'immagine
-transform = Resize((28, 28))  # Ridimensiona l'immagine alle dimensioni di input del modello
-transform = ToTensor()     # Converte l'immagine in un tensore
+transform = transforms.Compose([
+    transforms.Resize((28, 28)),  # Ridimensiona l'immagine alle dimensioni di input del modello
+    transforms.ToTensor()        # Converte l'immagine in un tensore
+])
 
 # Applica le trasformazioni e aggiunge una dimensione di batch
 image_tensor = transform(image).unsqueeze(0)
-
 
 image_tensor = image_tensor.to(device)
 
