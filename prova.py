@@ -40,17 +40,18 @@ class OurCNN(nn.Module):
             nn.Linear(256, 128),              # Secondo strato lineare
             nn.ReLU(),
             nn.Dropout(0.5),                  # Dropout
-            nn.Linear(128, 10)    
+            nn.Linear(128, 10)                # Strato di output
         )
 
     def forward(self, x):
         x = self.cnn(x)
         #print(x.shape)
-        x = torch.flatten(x,1)
+        #x = torch.flatten(x,1)
+        x = x.view(x.size(0), -1)
         #print(x.shape)
         x = self.mlp(x)
         return x
-    
+
 model = OurCNN().to(device)
 model.load_state_dict(torch.load('digits_rec.pth'))
 model.eval()
