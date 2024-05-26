@@ -11,15 +11,36 @@ class OurCNN(nn.Module):
     def __init__(self):
         super().__init__()
         self.cnn = nn.Sequential(
-            nn.Conv2d(1, 5, 3),
+            # nn.Conv2d(1, 5, 3),
+            # nn.ReLU(),
+            # nn.Conv2d(5, 10, 3),
+            # nn.ReLU(),
+            # nn.Conv2d(10, 1, 3),
+            # nn.ReLU()
+            nn.Conv2d(1, 32, 3, padding=1),  # Primo strato convoluzionale
+            nn.BatchNorm2d(32),               # Batch normalization
             nn.ReLU(),
-            nn.Conv2d(5, 10, 3),
-            nn.ReLU()
+            nn.MaxPool2d(2, 2),               # Primo strato di pooling
+            nn.Conv2d(32, 64, 3, padding=1),  # Secondo strato convoluzionale
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),               # Secondo strato di pooling
+            nn.Conv2d(64, 128, 3, padding=1), # Terzo strato convoluzionale
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2)                # Terzo strato di pooling
             )
         self.mlp = nn.Sequential(
-            nn.Linear(24*24*10,10),
+            # nn.Linear(22*22,10),
+            # nn.ReLU(),
+            # nn.Linear(10,10)
+            nn.Linear(128 * 3 * 3, 256),      # Primo strato lineare
             nn.ReLU(),
-            nn.Linear(10,10)
+            nn.Dropout(0.5),                  # Dropout
+            nn.Linear(256, 128),              # Secondo strato lineare
+            nn.ReLU(),
+            nn.Dropout(0.5),                  # Dropout
+            nn.Linear(128, 10)    
         )
 
     def forward(self, x):
