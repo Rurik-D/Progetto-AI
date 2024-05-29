@@ -22,7 +22,7 @@ class Wnd_manager:
         root.geometry("900x550")
         root.maxsize(1100, 650)
         root.minsize(700, 450)
-        root.iconbitmap("sudoku.ico")
+        root.iconbitmap("img\\sudoku.ico")
         root.title("SolveDoku!")
 
 
@@ -30,13 +30,13 @@ class Wnd_manager:
         """
             Switch theme from dark to light and vice versa.
         """
+        theme_color = "blue"
+
         if not self.__dark_theme :
             theme = "dark"
-            theme_color = "dark_blue"
             self.__dark_theme = True
         else:
             theme = "light"
-            theme_color = "blue"
             self.__dark_theme = False
         
         ctk.set_appearance_mode(theme)

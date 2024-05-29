@@ -14,10 +14,9 @@ class Root:
         self.__root = ctk.CTk()
 
         wnd_man = Wnd_manager(self.__root)
-        btn_man = Btn_manager(self.__root, wnd_man)
         lbl_man = Lbl_manager(self.__root)
+        btn_man = Btn_manager(self.__root, wnd_man, lbl_man)
 
-        lbl_man.show_title()
         btn_man.main_menu()
 
         self.__root.mainloop()
