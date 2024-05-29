@@ -5,6 +5,7 @@ from torchvision import transforms
 from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
 # Sposta il tensore sull'hardware appropriato (CPU o GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class OurCNN(nn.Module):
@@ -56,19 +57,44 @@ model = OurCNN().to(device)
 model.load_state_dict(torch.load('digits_rec.pth'))
 model.eval()
 
-image_path = "C:\\Users\giuse\Desktop\Progetto-AI\prova.jpg"
+image_path = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\Cattura5.PNG"
 image = Image.open(image_path)
+print(type(image))
+
+image = cv2.imread(image_path, 0)
+
+image = cv2.resize(image, (200,200), interpolation=cv2.INTER_LINEAR)
+
+clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+image = clahe.apply(image)
+
+image = cv2.threshold(image, 120, 255, cv2.THRESH_BINARY)
+image = cv2.bitwise_not(image[1])
+cv2.imshow("image", image)
+cv2.waitKey(0)
+image = cv2.resize(image, (28,28), interpolation=cv2.INTER_AREA)
+print(type(image))
+print(image)
 
 
 # Applica le trasformazioni all'immagine
 transform = transforms.Compose([
-    transforms.Resize((28, 28)),  # Ridimensiona l'immagine alle dimensioni di input del modello
-    transforms.ToTensor()        # Converte l'immagine in un tensore
+    #transforms.Resize((28, 28)),
+    #transforms.Grayscale(num_output_channels=1),# Ridimensiona l'immagine alle dimensioni di input del modello
+    transforms.ToTensor()    # Converte l'immagine in un tensore
+    #transforms.Lambda(invert_colors)
+    
 ])
 
 # Applica le trasformazioni e aggiunge una dimensione di batch
 image_tensor = transform(image).unsqueeze(0)
 
+image_pil = transforms.ToPILImage()(image_tensor.squeeze(0))
+#image_pil.show()
+image_np = image_tensor.squeeze(0).numpy()
+
+plt.imshow(image_np[0], cmap='gray')
+plt.show()
 image_tensor = image_tensor.to(device)
 
 # Passa il tensore attraverso il modello per ottenere le previsioni delle classi
