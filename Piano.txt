@@ -22,7 +22,8 @@ Peppe-Ale
 	- Creare modello (3)
 
 
-
+Immagini sudoku = 2620
+immagini random = 3000
 
 
 

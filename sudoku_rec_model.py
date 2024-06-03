@@ -15,15 +15,14 @@ csv_input = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\our_dataset.csv'
 df = pd.read_csv(csv_input)
 
 
-train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
+train_df, test_df = train_test_split(df, test_size=0.2, random_state=100)
 
 path_images = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug"
 
 train_df['filename'] = train_df['filename'].apply(lambda x: os.path.join(path_images, x))
 test_df['filename'] = test_df['filename'].apply(lambda x: os.path.join(path_images, x))
 
-
-device = ("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class CustomImageDataset(Dataset):
     def __init__(self, dataframe, transform=None):
@@ -47,21 +46,19 @@ class CustomImageDataset(Dataset):
 transform = transforms.Compose([
     transforms.Resize((128, 128)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
 # Crea i DataLoader per il training e il test set
 train_dataset = CustomImageDataset(train_df, transform=transform)
 test_dataset = CustomImageDataset(test_df, transform=transform)
 
+epochs = 5
+batch = 30
+learning_rate = 0.001
 
-epochs = 10
-batch_size = 32
-learning_rate = 0.0001
-
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-
+train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch, shuffle=False)
 
 # Definisci il modello CNN
 class OurCNN(nn.Module):
@@ -82,41 +79,63 @@ class OurCNN(nn.Module):
         x = x.view(-1, 128 * 16 * 16)
         x = F.relu(self.fc1(x))
         x = self.dropout(x)
-        x = torch.sigmoid(self.fc2(x))
+        x = self.fc2(x)  # Do not apply sigmoid here
         return x
 
-
 model = OurCNN().to(device)
-criterion = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+loss_fn = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
+metric = torchmetrics.Accuracy(task='binary').to(device)
+
+def train_loop(dataloader, model, loss_fn, optimizer):
+    for epoch in range(epochs):
+        model.train()
+        metric.reset()  # 
+
+        for batch, (images, labels) in enumerate(dataloader):
+            images, labels = images.to(device), labels.to(device)
+            labels = labels.view(-1, 1).float()
+
+            pred = model(images)
+            loss = loss_fn(pred, labels)
+            
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            
+            metric.update(torch.sigmoid(pred), labels)
+        
+            if batch % 10 == 0:
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                    epoch, batch * len(images), len(dataloader.dataset),
+                    100. * batch / len(dataloader), loss.item()))
+    
+        acc = metric.compute()
+        print(f'Final Accuracy: {acc}')
+        metric.reset()
+
+def test_loop(dataloader, model):
+    model.eval()
+    metric.reset()
+
+    with torch.no_grad():
+        for images, labels in dataloader:
+            images, labels = images.to(device), labels.to(device)
+            labels = labels.view(-1, 1).float()
+            pred = model(images)
+            metric.update(torch.sigmoid(pred), labels)
+    
+    acc = metric.compute()
+
+    print(f'Final Testing accuracy: {acc}')
+    metric.reset()
 
 for epoch in range(epochs):
-    model.train()
-    running_loss = 0.0
-    for images, labels in train_loader:
-        images, labels = images.to(device), labels.to(device)
-        labels = labels.view(-1, 1).float()
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()
-    
-    print(f'Epoch [{epoch+1}/{epochs}], Loss: {running_loss/len(train_loader)}')
+    print(f'Epoch: {epoch}')
+    train_loop(train_loader, model, loss_fn, optimizer)
+    test_loop(test_loader, model)
 
-# Valuta il modello sul test set
-model.eval()
-correct = 0
-total = 0
+#torch.save(model.state_dict(),"sudoku_rec_model.pth")
 
-with torch.no_grad():
-    for images, labels in test_loader:
-        images, labels = images.to(device), labels.to(device)
-        outputs = model(images).to(device)
-        predicted = (outputs > 0.5).float()
-        total += labels.size(0)
-        correct += (predicted.view(-1) == labels).sum().item()
-
-print(f'Test Accuracy: {100 * correct / total}%')
+print("Done!")
