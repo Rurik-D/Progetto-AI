@@ -9,43 +9,64 @@ class Lbl_manager:
     """
     def __init__(self, root):
         self.__root = root
-        self.title_lbl = ctk.CTkLabel(root, text="")
-        self.loadedImg_lbl= ctk.CTkLabel(root, text="")
+        self.title_lbl = ctk.CTkLabel(root, text='')
+        self.theme_lbl = ctk.CTkLabel(root, text='')
+        self.credits_lbl= ctk.CTkLabel(root, text="Emanuele D'Agostino\tAlessandro Buccioli\tGiuseppe Borracci")
+        self.loadedImg_lbl= ctk.CTkLabel(root, text='')
 
-        self.set_title()
+
+        self.set_images()
 
 
-    def set_title(self):
-        img = ctk.CTkImage(light_image=Image.open('img\\title_light-no_bg.png'),
-                           dark_image=Image.open('img\\title_dark-no_bg.png'),
-                           size=(500, 100))
 
-        self.title_lbl = ctk.CTkLabel(self.__root, text='', image=img)
+    def set_images(self):
+        """
+            Set the images of theme and title.
+        """
+        title = ctk.CTkImage(light_image=Image.open('img\\title_light-no_bg.png'),
+                             dark_image=Image.open('img\\title_dark-no_bg.png'),
+                             size=(500, 100))
 
-    def set_image_label(self, path):
+        theme = ctk.CTkImage(light_image=Image.open('img\\light.png'),
+                             dark_image=Image.open('img\\moon.png'),
+                             size=(30, 30))
+
+        self.title_lbl = ctk.CTkLabel(self.__root, text='', image=title)
+        self.theme_lbl = ctk.CTkLabel(self.__root, text='', image=theme)
+
+
+    def show_menu_graphics(self):
+        """
+            Show all the graphics of the main menu.
+        """
+        self.title_lbl.place(relx=0.5, rely=0.18, anchor=ctk.CENTER)
+        self.credits_lbl.place(relx=0.5, rely=0.97, anchor=ctk.CENTER)
+        self.theme_lbl.place(relx=0.96, rely=0.06, anchor=ctk.CENTER)
+
+
+    def set_loadedImg(self, path):
+        """
+            Set the image by the loaded path.
+        """
         img = ctk.CTkImage(light_image=Image.open(path),
                     dark_image=Image.open(path),
                     size=(400, 400))
-        self.loadedImg_lbl = ctk.CTkLabel(self.__root, text='', image=img)
-
-    def hide_title(self):
-        """
-            Hide the title label.
-        """
-        self.title_lbl.place_forget()
+        self.loadedImg_lbl = ctk.CTkLabel(self.__root, text='', height=415, fg_color="gray", 
+                                          corner_radius=8, image=img)
 
 
-    def hide_loadedImg(self):
-        self.loadedImg_lbl.place_forget()
-
-
-    def show_title(self):
-        """
-            Show the title label.
-        """
-        self.title_lbl.place(relx=0.5, rely=0.18, anchor=ctk.CENTER)
-
-    
     def show_loadedImg(self):
+        """
+            Show the loaded image.
+        """
         self.loadedImg_lbl.place(relx=0.7, rely=0.5, anchor=ctk.CENTER)
 
+
+    def hide_all(self):
+        """
+            Hide all the graphics.
+        """
+        self.loadedImg_lbl.place_forget()
+        self.title_lbl.place_forget()
+        self.credits_lbl.place_forget()
+        self.theme_lbl.place_forget()

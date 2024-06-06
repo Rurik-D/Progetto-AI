@@ -5,7 +5,6 @@ from label_manager import Lbl_manager
 from window_manager import Wnd_manager
 
 
-
 class Root:
     """
         Custom tkinter main window
