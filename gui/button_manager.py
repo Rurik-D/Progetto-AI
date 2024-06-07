@@ -1,6 +1,7 @@
 from tkinter import filedialog
 from tkinter import messagebox
 import customtkinter as ctk
+from language import load_language
 
 class Btn_manager:
     """
@@ -12,59 +13,40 @@ class Btn_manager:
         H = 50
         
         self.__lbl_man = lbl_man
+        self.lang = "en"
+
 
         # Main menu
-        self.start_btn = ctk.CTkButton(root, 
-                                       text="Start",
-                                       height=H,
-                                       width=W,
-                                       corner_radius=corner_rad,
-                                       command=self.imgLoad_menu)
-        self.settings_btn = ctk.CTkButton(root, 
-                                          text="Settings",
-                                          height=H,
-                                          width=W,
-                                          corner_radius=corner_rad,
-                                          command=wnd_man.switch_theme)
-        self.exit_btn = ctk.CTkButton(root, 
-                                      text="Exit",
-                                      height=H,
-                                      width=W,
-                                      corner_radius=corner_rad,
-                                      command=root.destroy)
+        self.start_btn = ctk.CTkButton(root, height=H, width=W,
+                                       corner_radius=corner_rad, command=self.imgLoad_menu)
+        self.settings_btn = ctk.CTkButton(root,height=H, width=W,
+                                          corner_radius=corner_rad, command=self.setts_menu)
+        self.exit_btn = ctk.CTkButton(root, height=H, width=W,
+                                      corner_radius=corner_rad, command=root.destroy)
         
         # Image load menu
-        self.load_btn = ctk.CTkButton(root, 
-                                      text="Load",
-                                      height=H,
-                                      width=W,
-                                      corner_radius=corner_rad,
-                                      command=self.load_image)
-        self.back_btn = ctk.CTkButton(root, 
-                                      text="Back",
-                                      height=H,
-                                      width=W,
-                                      corner_radius=corner_rad,
-                                      command=self.main_menu)
+        self.load_btn = ctk.CTkButton(root, height=H, width=W,
+                                      corner_radius=corner_rad, command=self.load_image)
+        self.back_btn = ctk.CTkButton(root, height=H, width=W,
+                                      corner_radius=corner_rad, command=self.main_menu)
         
         # Solve menu
-        self.solve_btn = ctk.CTkButton(root, 
-                                       text="Solve!",
-                                       height=H,
-                                       width=W,
+        self.solve_btn = ctk.CTkButton(root, height=H, width=W,
                                        corner_radius=corner_rad)
-        self.change_btn = ctk.CTkButton(root, 
-                                        text="Change",
-                                        height=H,
-                                        width=W,
-                                        corner_radius=corner_rad,
-                                        command=self.load_image)
-        self.mainM_btn = ctk.CTkButton(root, 
-                                       text="Main Menu",
-                                       height=H,
-                                       width=W,
-                                       corner_radius=corner_rad,
-                                       command=self.main_menu)
+        self.change_btn = ctk.CTkButton(root, height=H, width=W,
+                                        corner_radius=corner_rad, command=self.load_image)
+        self.mainM_btn = ctk.CTkButton(root, height=H, width=W,
+                                       corner_radius=corner_rad, command=self.main_menu)
+        
+        # Settings menu
+        self.lang_btn = ctk.CTkButton(root, height=H, width=W,
+                                       corner_radius=corner_rad, command=self.change_lang)
+        
+        # Theme switch
+        self.theme_switch = ctk.CTkSwitch(root, text="", height=20, width=30, 
+                                          command=wnd_man.switch_theme)
+
+        self.update_btn_lang()
 
 
     def main_menu(self):
@@ -72,11 +54,12 @@ class Btn_manager:
             Show main menu buttons.
         """
         self.hide_all()
-        self.__lbl_man.show_title()
-        self.__lbl_man.hide_loadedImg()
+        self.__lbl_man.hide_all()
+        self.__lbl_man.show_menu_graphics()
         self.start_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
         self.settings_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.exit_btn.place(relx=0.5, rely=0.75, anchor=ctk.CENTER)
+        self.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
 
 
     def imgLoad_menu(self):
@@ -86,6 +69,7 @@ class Btn_manager:
         self.hide_all()
         self.load_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
         self.back_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
+        self.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
 
 
     def solve_menu(self, imgPath):
@@ -93,14 +77,22 @@ class Btn_manager:
             Show solving menu's buttons.
         """
         self.hide_all()
-        self.__lbl_man.hide_title()
-        self.__lbl_man.hide_loadedImg()
-        self.__lbl_man.set_image_label(imgPath)
+        self.__lbl_man.hide_all()
+        self.__lbl_man.set_loadedImg(imgPath)
         self.__lbl_man.show_loadedImg()
         self.solve_btn.place(relx=0.2, rely=0.35, anchor=ctk.CENTER)
         self.change_btn.place(relx=0.2, rely=0.5, anchor=ctk.CENTER)
         self.mainM_btn.place(relx=0.2, rely=0.65, anchor=ctk.CENTER)
 
+
+    def setts_menu(self):
+        """
+            Show settings menu's buttons.
+        """
+        self.hide_all()
+        self.lang_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
+        self.back_btn .place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
+        self.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
 
     def load_image(self):
         """
@@ -117,11 +109,27 @@ class Btn_manager:
                 messagebox.showwarning("Advice", "Select an image!")
 
 
-    def setts_menu(self):
+    def change_lang(self):
+        if self.lang == 'en':
+            self.lang = 'it'
+        else:
+            self.lang = 'en'
+        self.update_btn_lang()
+
+    def update_btn_lang(self):
         """
-            Show settings menu's buttons.
+            Loads the new languange and updates al the buttons's text
         """
-        pass
+        nw_lang = load_language(self.lang)
+        self.start_btn.configure(text=nw_lang['start'])
+        self.settings_btn.configure(text=nw_lang['settings'])
+        self.exit_btn.configure(text=nw_lang['exit'])
+        self.load_btn.configure(text=nw_lang['load'])
+        self.back_btn.configure(text=nw_lang['back'])
+        self.solve_btn.configure(text=nw_lang['solve'])
+        self.change_btn.configure(text=nw_lang['change'])
+        self.mainM_btn.configure(text=nw_lang['mainMenu'])
+        self.lang_btn.configure(text=nw_lang['lang'])
 
 
     def hide_all(self):
@@ -136,5 +144,5 @@ class Btn_manager:
         self.solve_btn.place_forget()
         self.change_btn.place_forget()
         self.mainM_btn.place_forget()
-
-
+        self.lang_btn.place_forget()
+        self.theme_switch.place_forget()
