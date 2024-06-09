@@ -10,19 +10,19 @@ def sudoku_filter(img):
 
     return img
 
-def display_keypoints(img, keypoints, descriptor, feedback=False):
-    if feedback:
-        cv2.drawKeypoints(img, keypoints, img, (51, 164, 200),
-                        cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        
-        cv2.imshow("Keypoints of the Image", img)
-        cv2.waitKey(0)
+def display_keypoints(img, keypoints, descriptor):
+    cv2.drawKeypoints(img, keypoints, img, (51, 164, 200),
+                    cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    
+    cv2.imshow("Keypoints of the Image", img)
+    cv2.waitKey(0)
 
-def akaze(img):
+def akaze(img, feedback=False):
     akaze = cv2.AKAZE.create(threshold=0.003, nOctaves=10)
     keypoints, descriptor = akaze.detectAndCompute(img, None)
-    display_keypoints(img, keypoints, descriptor, True)
-    
+    if feedback:
+        display_keypoints(img, keypoints, descriptor)
+    return keypoints, descriptor
 
 def select_file(filepath=None):
     if filepath != None:
@@ -31,11 +31,18 @@ def select_file(filepath=None):
         filepath = filedialog.askopenfilename(title="Select the image")
         return filepath
 
-image_fixed = cv2.imread(select_file("C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_6_2331578.jpeg"))
+base_image = cv2.imread(select_file())
+new_image = cv2.imread(select_file())
 
-akaze(image_fixed)
-#new_image = cv2.imread(select_file(), 0)
+new_image = sudoku_filter(new_image)
 
-new_image = cv2.imread(select_file(), 0)
-filtered_img = sudoku_filter(new_image)
-akaze(filtered_img)
+base_kpts, base_des = akaze(base_image)
+new_kpts, new_des = akaze(new_image)
+
+bf = cv2.BFMatcher()
+matches = bf.knnMatch(base_des, new_des, k=2)
+
+good = []
+for m,n in matches:
+    if m.distance < 0.75*n.distance: #0.75 valore arbitrario
+        good.append([m])
