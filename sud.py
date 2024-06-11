@@ -10,25 +10,18 @@ def getGrid(imgPath):
     """
     img = cv2.imread(imgPath)
     filteredImg = applyFilters(img)
-    contours = getCotours(filteredImg)
-    warped = prospTransform(img, contours)
+    approx = approxContours(filteredImg)
+
+    # Assicurati che il contorno sia un quadrato
+    if len(approx) == 4:
+        warped, dst_points = prospTransform(img, approx)
+
+        zoomCells(warped, dst_points)
+        
+    else:
+        print("Impossibile trovare un quadrato nella griglia del sudoku.")
+
     return warped
-
-
-def sortPoints(pts):
-    """
-        Order the points clockwise.
-    """
-    rect = np.zeros((4, 2), dtype="float32")
-    s = pts.sum(axis=1)
-    rect[0] = pts[np.argmin(s)]
-    rect[2] = pts[np.argmax(s)]
-
-    diff = np.diff(pts, axis=1)
-    rect[1] = pts[np.argmin(diff)]
-    rect[3] = pts[np.argmax(diff)]
-
-    return rect
 
 
 def applyFilters(img):
@@ -49,68 +42,92 @@ def applyFilters(img):
     return binary
 
 
-def getCotours(img):
-    # Trova i contorni nell'immagine binaria
+def approxContours(img):
+    """
+        Finds all outer edges in the binary image and 
+        approximates them to save memory, then approximates
+        the edges to reduce the number of points while
+        maintaining the overall shape.
+    """
     contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    return contours
 
-
-def prospTransform(img, contours):
     # Trova il contorno più grande che dovrebbe essere la griglia del sudoku
     largest_contour = max(contours, key=cv2.contourArea)
-    # Approssima il contorno a un quadrato
     epsilon = 0.02 * cv2.arcLength(largest_contour, True)
+    # Approssima il contorno a un quadrato
     approx = cv2.approxPolyDP(largest_contour, epsilon, True)
-    print(approx)
-    # Assicurati che il contorno sia un quadrato
-    if len(approx) == 4:
-        points = approx.reshape(len(approx), 2)
-        src_points = sortPoints(points)
-
-        # Definisci i punti di destinazione per la trasformazione prospettica
-        side = max([
-            np.linalg.norm(src_points[0] - src_points[1]),
-            np.linalg.norm(src_points[1] - src_points[2]),
-            np.linalg.norm(src_points[2] - src_points[3]),
-            np.linalg.norm(src_points[3] - src_points[0])
-        ])
-        
-        dst_points = np.array([
-            [0, 0],
-            [side - 1, 0],
-            [side - 1, side - 1],
-            [0, side - 1]
-        ], dtype="float32")
-
-        # Calcola la matrice di trasformazione
-        M = cv2.getPerspectiveTransform(src_points, dst_points)
-        print(dst_points)
-        print(src_points)
-        # Applica la trasformazione prospettica
-        warped = cv2.warpPerspective(img, M, (int(side), int(side)))
-
-        dst_points = dst_points.astype(int)
-        for point in dst_points.tolist():
-            print(type(point))
-            punto = (point[0],point[1])
-            print(punto)
-            cv2.circle(warped, punto, 5, (0, 255, 0), -1)
-
-    else:
-        print("Impossibile trovare un quadrato nella griglia del sudoku.")
-        
-    return warped
+    
+    return approx
 
 
+def sortPoints(pts):
+    """
+        Order the points clockwise.
+    """
+    rect = np.zeros((4, 2), dtype="float32")
+    s = pts.sum(axis=1)
+    rect[0] = pts[np.argmin(s)]
+    rect[2] = pts[np.argmax(s)]
+
+    diff = np.diff(pts, axis=1)
+    rect[1] = pts[np.argmin(diff)]
+    rect[3] = pts[np.argmax(diff)]
+
+    return rect
+
+
+def prospTransform(img, approx):
+    """
+        Defines the target points for the perspective 
+        transformation and applies it.
+        Returns warped image and destination points.
+    """
+    points = approx.reshape(len(approx), 2)
+    src_points = sortPoints(points)
+    
+    side = max([
+        np.linalg.norm(src_points[0] - src_points[1]),
+        np.linalg.norm(src_points[1] - src_points[2]),
+        np.linalg.norm(src_points[2] - src_points[3]),
+        np.linalg.norm(src_points[3] - src_points[0])
+    ])
+    
+    dst_points = np.array([
+                [0, 0],
+                [side - 1, 0],
+                [side - 1, side - 1],
+                [0, side - 1] ], dtype="float32")
+
+    M = cv2.getPerspectiveTransform(src_points, dst_points)
+    warped = cv2.warpPerspective(img, M, (int(side), int(side)))
+
+    return warped, dst_points.astype(int)
+
+
+def zoomCells(warped, dst_points):
+    for point in dst_points.tolist():
+        print(type(point))
+        punto = (point[0],point[1])
+        print(punto)
+        cv2.circle(warped, punto, 5, (0, 255, 0), -1)
+    
+    rows, cols = warped.shape[:2]
+
+    for x in range(0, rows-rows//9, rows//9):
+        print(x)
+        for y in range(0, cols-cols//9, cols//9):
+            print(y)
+            M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
+            dst_image = cv2.warpAffine(warped, M, (cols, rows))
+            cv2.imshow("image", dst_image)
+            cv2.waitKey(0)
 
 
 
-
-cv2.namedWindow('Sudoku Grid Points', cv2.WINDOW_NORMAL)
-cv2.imshow('Sudoku Grid Points', getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_289_6471347.jpeg'))
+#cv2.namedWindow('Sudoku Grid Points', cv2.WINDOW_NORMAL)
+cv2.imshow('Sudoku Grid Points', getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
 
 
 
@@ -147,3 +164,4 @@ cv2.destroyAllWindows()
 #     punto = ((int(point[0][0])),(int(point[0][1])))
 #     print(punto)
 #     cv2.circle(warped, punto, 5, (0, 255, 0), -1)
+
