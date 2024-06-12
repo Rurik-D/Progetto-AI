@@ -4,9 +4,10 @@ import customtkinter as ctk
 from language import load_language
 from sys import path
 
-path.insert(1, 'C:\\Users\\giuse\\Desktop\\Progetto-AI')
+path.insert(1, 'C:\\Users\\halle\\Desktop\\Progetto-AI')
 
-from sud import *
+import sud
+
 
 class Btn_manager:
     """
@@ -111,7 +112,12 @@ class Btn_manager:
         # Checks if a file has been selected
         if file_path:
             if file_path.split('.')[-1] in extensions:
-                self.solve_menu(file_path)
+                grid, _, isGrid= sud.getGrid(file_path)
+
+                if isGrid:
+                    self.solve_menu(grid)
+                else:
+                    messagebox.showwarning(self.currLang['adv'], self.currLang['selectImg']) 
             else:
                 messagebox.showwarning(self.currLang['adv'], self.currLang['selectImg'])
 

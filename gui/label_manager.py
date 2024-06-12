@@ -1,7 +1,8 @@
 from tkinter import *
 import customtkinter as ctk
-from PIL import Image
-
+from PIL import Image, ImageTk
+import cv2
+import numpy as np
 
 class Lbl_manager:
     """
@@ -16,7 +17,6 @@ class Lbl_manager:
 
 
         self.set_images()
-
 
 
     def set_images(self):
@@ -44,15 +44,17 @@ class Lbl_manager:
         self.theme_lbl.place(relx=0.96, rely=0.06, anchor=ctk.CENTER)
 
 
-    def set_loadedImg(self, path):
+    def set_loadedImg(self, image):
         """
             Set the image by the loaded path.
         """
-        img = ctk.CTkImage(light_image=Image.open(path),
-                    dark_image=Image.open(path),
-                    size=(400, 400))
+        image = cv2_to_pil_image(image)
+
+        tk_img = ctk.CTkImage(light_image=image,
+                            dark_image=image,
+                            size=(400, 400))
         self.loadedImg_lbl = ctk.CTkLabel(self.__root, text='', height=415, fg_color="gray", 
-                                          corner_radius=8, image=img)
+                                          corner_radius=8, image=tk_img)
 
 
     def show_loadedImg(self):
@@ -70,3 +72,12 @@ class Lbl_manager:
         self.title_lbl.place_forget()
         self.credits_lbl.place_forget()
         self.theme_lbl.place_forget()
+
+
+
+def cv2_to_pil_image(cv2_image):
+    # Converti l'immagine da BGR a RGB
+    cv2_image_rgb = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+    # Converti l'immagine in un oggetto PIL
+    pil_image = Image.fromarray(cv2_image_rgb)
+    return pil_image

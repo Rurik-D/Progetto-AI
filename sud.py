@@ -14,13 +14,15 @@ def getGrid(imgPath):
     # Assicurati che il contorno sia un quadrato
     if len(approx) == 4:
         warped, dst_points = prospTransform(img, approx)
+        isGrid = True
 
         #zoomCells(warped, dst_points)
         
     else:
-        print("Impossibile trovare un quadrato nella griglia del sudoku.")
+        warped, dst_points = None, None
+        isGrid = False
 
-    return warped, dst_points
+    return warped, dst_points, isGrid
 
 
 def applyFilters(img):
@@ -123,10 +125,10 @@ def zoomCells(warped, dst_points):
 
 
 
-cv2.namedWindow('Sudoku Grid Points', cv2.WINDOW_NORMAL)
-cv2.imshow('Sudoku Grid Points', getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'))
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.namedWindow('Sudoku Grid Points', cv2.WINDOW_NORMAL)
+# cv2.imshow('Sudoku Grid Points', getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg')[0])
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 
 
