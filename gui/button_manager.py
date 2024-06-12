@@ -2,6 +2,11 @@ from tkinter import filedialog
 from tkinter import messagebox
 import customtkinter as ctk
 from language import load_language
+from sys import path
+
+path.insert(1, 'C:\\Users\\giuse\\Desktop\\Progetto-AI')
+
+from sud import *
 
 class Btn_manager:
     """

@@ -123,10 +123,10 @@ def zoomCells(warped, dst_points):
 
 
 
-# #cv2.namedWindow('Sudoku Grid Points', cv2.WINDOW_NORMAL)
-# cv2.imshow('Sudoku Grid Points', getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'))
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
+cv2.namedWindow('Sudoku Grid Points', cv2.WINDOW_NORMAL)
+cv2.imshow('Sudoku Grid Points', getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'))
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 
 
