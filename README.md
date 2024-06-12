@@ -2,10 +2,10 @@
 
 ## Piano di lavoro - Macrounità
 
-- [ ] GUI
-- [ ] Modello per riconoscimento dei numeri
-- [ ] Modello per riconoscimento dei Sudoku
-- [ ] Elaborazione dell'immagine del Sudoku
+- [x] GUI
+- [x] Modello per riconoscimento dei numeri
+- [x] Modello per riconoscimento dei Sudoku
+- [x] Elaborazione dell'immagine del Sudoku
 - [ ] Riconoscimento dei numeri all'interno della griglia<br>(tramite il modello per riconoscimento dei numeri)
 - [ ] Riempimento dell'immagine con i numeri della soluzione<br>*oppure*<br>Creazione di una griglia nuova con la soluzione
 
@@ -25,9 +25,31 @@
 
 - **Mercoledì 29:**
   - ***Manu***
-    - [ ] Realizzare le prime bozze per la GUI
-    - [ ] Delineare un primo prototipo (`Tkinter`)
+    - [x] Realizzare le prime bozze per la GUI
+    - [x] Delineare un primo prototipo (`Tkinter`)
   - ***Peppe*** e ***Ale***
-    - [ ] Creare un modello per riconoscimento dei numeri
-    - [ ] Trovare immagini che **non** siano Sudoku<br>per il modello per riconoscimento dei Sudoku
-    - [ ] Creare un modello per riconoscimento dei Sudoku
+    - [x] Creare un modello per riconoscimento dei numeri
+    - [x] Trovare immagini che **non** siano Sudoku<br>per il modello per riconoscimento dei Sudoku
+
+### Giugno
+
+- **Martedì 11**:
+  - [x] Creare un algoritmo per riconoscere la griglia del Sudoku ed per individuare le singole celle all'interno della griglia.
+
+- **Mercoledì 12:**
+  - [ ] Associare l'algoritmo di riconoscimento di griglia e celle al modello di riconoscimento dei numeri
+
+- **Giovedì 13 - Domenica 23** ***(date da definire):***
+  - [ ] Realizzare algoritmo di risoluzione del Sudoku
+  - [ ] Scrivere numeri calcolati sull'immagine acquisita del Sudoku oppure creare griglia ex novo con soluzione del Sudoku
+  - [ ] Connettere il codice alla GUI
+  - [ ] Ordinare il codice
+  - [ ] Documentare il codice
+  - [ ] Scrivere la relazione
+
+- **Lunedì 24:**
+  - [ ] **CONSEGNA CODICE E RELAZIONE**
+
+- **Lunedì 24 - Domenica 30:**
+  - [ ] Realizzare presentazione
+  - [ ] Organizzare discussione per comprimerla in 7 minuti
