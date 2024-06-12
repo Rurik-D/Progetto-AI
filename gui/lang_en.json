@@ -7,5 +7,8 @@
     "solve" : "Solve!",
     "change" : "Change",
     "lang" : "Language",
-    "mainMenu" : "Main Menu"
+    "mainMenu" : "Main Menu",
+    "selectImg" : "You must select the image of a sudoku!",
+    "adv" : "Advice",
+    "selectFile" : "Select an image"
 }

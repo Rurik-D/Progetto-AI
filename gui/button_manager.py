@@ -14,6 +14,7 @@ class Btn_manager:
         
         self.__lbl_man = lbl_man
         self.lang = "en"
+        self.currLang = load_language(self.lang)
 
 
         # Main menu
@@ -94,42 +95,41 @@ class Btn_manager:
         self.back_btn .place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
 
+
     def load_image(self):
         """
             Show solving menu's buttons.
         """
         extensions = ('png', 'jpg', 'jpeg')
-        file_path = filedialog.askopenfilename(title="Select a file")
+        file_path = filedialog.askopenfilename(title=self.currLang['selectFile'])
 
         # Checks if a file has been selected
         if file_path:
             if file_path.split('.')[-1] in extensions:
                 self.solve_menu(file_path)
             else:
-                messagebox.showwarning("Advice", "Select an image!")
+                messagebox.showwarning(self.currLang['adv'], self.currLang['selectImg'])
 
 
     def change_lang(self):
-        if self.lang == 'en':
-            self.lang = 'it'
-        else:
-            self.lang = 'en'
+        self.lang = 'en' if self.lang == 'it' else 'it'
+        self.currLang = load_language(self.lang)
         self.update_btn_lang()
+
 
     def update_btn_lang(self):
         """
             Loads the new languange and updates al the buttons's text
         """
-        nw_lang = load_language(self.lang)
-        self.start_btn.configure(text=nw_lang['start'])
-        self.settings_btn.configure(text=nw_lang['settings'])
-        self.exit_btn.configure(text=nw_lang['exit'])
-        self.load_btn.configure(text=nw_lang['load'])
-        self.back_btn.configure(text=nw_lang['back'])
-        self.solve_btn.configure(text=nw_lang['solve'])
-        self.change_btn.configure(text=nw_lang['change'])
-        self.mainM_btn.configure(text=nw_lang['mainMenu'])
-        self.lang_btn.configure(text=nw_lang['lang'])
+        self.start_btn.configure(text=self.currLang ['start'])
+        self.settings_btn.configure(text=self.currLang ['settings'])
+        self.exit_btn.configure(text=self.currLang ['exit'])
+        self.load_btn.configure(text=self.currLang ['load'])
+        self.back_btn.configure(text=self.currLang ['back'])
+        self.solve_btn.configure(text=self.currLang ['solve'])
+        self.change_btn.configure(text=self.currLang ['change'])
+        self.mainM_btn.configure(text=self.currLang ['mainMenu'])
+        self.lang_btn.configure(text=self.currLang ['lang'])
 
 
     def hide_all(self):
