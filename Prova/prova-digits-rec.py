@@ -54,10 +54,10 @@ class OurCNN(nn.Module):
         return x
 
 model = OurCNN().to(device)
-model.load_state_dict(torch.load('digits_rec.pth'))
+model.load_state_dict(torch.load('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Models\\digits_rec.pth'))
 model.eval()
 
-image_path = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\Cattura5.PNG"
+image_path = "C:\\Users\giuse\\Desktop\\Progetto-AI\\Cattura.PNG"
 image = Image.open(image_path)
 print(type(image))
 
