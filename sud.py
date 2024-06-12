@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 
-
 def getGrid(imgPath):
     """
         Open the image from a given path, applies filters,

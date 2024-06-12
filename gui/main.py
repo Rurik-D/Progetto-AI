@@ -1,7 +1,8 @@
 import root
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname("Progetto-AI"), '..')))
-from .. import *
+sys.path.insert(1, 'C:\\Users\\giuse\\Desktop\\Progetto-AI')
+from sud import *
+prova()
 
 root.Root()

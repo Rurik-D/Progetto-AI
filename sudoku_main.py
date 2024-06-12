@@ -1,56 +1,73 @@
-from sud import getGrid 
-import cv2 
+from sud import getGrid
+
+import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+
 import torch
 from torch import nn
 from torchvision import transforms
-from PIL import Image
-import matplotlib.pyplot as plt
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-image_path = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'
+from PIL import Image
+
+
+def select_file(filepath=None):
+    if filepath != None:
+        return filepath
+    else:
+        filepath = filedialog.askopenfilename(title="Select the dataset file")
+        return filepath
+
+def choose_device(feedback=False):
+    device = ("cuda" if torch.cuda.is_available()
+              else "mps"
+              if torch.backends.mps.is_available()
+              else "cpu")
+    
+    if feedback:
+        print("Device in use:", device)
+    
+    return device
+
+device = choose_device()
+image_path = select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg')
+
 class OurCNN(nn.Module):
     def __init__(self):
         super().__init__()
+        
         self.cnn = nn.Sequential(
-            # nn.Conv2d(1, 5, 3),
-            # nn.ReLU(),
-            # nn.Conv2d(5, 10, 3),
-            # nn.ReLU(),
-            # nn.Conv2d(10, 1, 3),
-            # nn.ReLU()
-            nn.Conv2d(1, 32, 3, padding=1),  # Primo strato convoluzionale
-            nn.BatchNorm2d(32),               # Batch normalization
+            nn.Conv2d(1, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.MaxPool2d(2, 2),               # Primo strato di pooling
-            nn.Conv2d(32, 64, 3, padding=1),  # Secondo strato convoluzionale
+            nn.MaxPool2d(2, 2),
+            
+            nn.Conv2d(32, 64, 3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.MaxPool2d(2, 2),               # Secondo strato di pooling
-            nn.Conv2d(64, 128, 3, padding=1), # Terzo strato convoluzionale
+            nn.MaxPool2d(2, 2),
+            
+            nn.Conv2d(64, 128, 3, padding=1),
             nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.MaxPool2d(2, 2)                # Terzo strato di pooling
+            nn.MaxPool2d(2, 2)
             )
+        
         self.mlp = nn.Sequential(
-            # nn.Linear(22*22,10),
-            # nn.ReLU(),
-            # nn.Linear(10,10)
-            nn.Linear(128 * 3 * 3, 256),      # Primo strato lineare
+            nn.Linear(128 * 3 * 3, 256),
             nn.ReLU(),
-            nn.Dropout(0.5),                  # Dropout
-            nn.Linear(256, 128),              # Secondo strato lineare
+            nn.Dropout(0.5),
+            
+            nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Dropout(0.5),                  # Dropout
-            nn.Linear(128, 10)                # Strato di output
+            nn.Dropout(0.5),
+            
+            nn.Linear(128, 10)
         )
 
     def forward(self, x):
         x = self.cnn(x)
-        #print(x.shape)
-        #x = torch.flatten(x,1)
         x = x.view(x.size(0), -1)
-        #print(x.shape)
         x = self.mlp(x)
         return x
     
@@ -76,8 +93,8 @@ def zoomCells(warped, dst_points):
             M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
             dst_image = cv2.warpAffine(warped, M, (cols, rows))
             digits_rec(dst_image)
-            # cv2.imshow("image", dst_image)
-            # cv2.waitKey(0)
+            cv2.imshow("image", dst_image)
+            cv2.waitKey(0)
 
 def digits_rec(image_path):
 
