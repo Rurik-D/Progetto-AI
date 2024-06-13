@@ -4,7 +4,7 @@ import customtkinter as ctk
 from language import load_language
 from sys import path
 
-path.insert(1, 'C:\\Users\\halle\\Desktop\\Progetto-AI')
+path.insert(1, 'C:\\Users\\halle\\Desktop\\Progetto-AI\\src')
 
 from grid import Grid
 
