@@ -6,7 +6,7 @@ from sys import path
 
 path.insert(1, 'C:\\Users\\halle\\Desktop\\Progetto-AI')
 
-import sud
+from grid import Grid
 
 
 class Btn_manager:
@@ -112,10 +112,10 @@ class Btn_manager:
         # Checks if a file has been selected
         if file_path:
             if file_path.split('.')[-1] in extensions:
-                grid, _, isGrid= sud.getGrid(file_path)
+                grid = Grid(file_path)
 
-                if isGrid:
-                    self.solve_menu(grid)
+                if grid.isGrid:
+                    self.solve_menu(grid.warped)
                 else:
                     messagebox.showwarning(self.currLang['adv'], self.currLang['selectImg']) 
             else:

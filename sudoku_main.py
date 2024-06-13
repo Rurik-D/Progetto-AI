@@ -1,4 +1,4 @@
-from sud import getGrid
+from grid import Grid
 
 import cv2
 import numpy as np
@@ -75,7 +75,7 @@ model = OurCNN().to(device)
 model.load_state_dict(torch.load('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Models\\\digits_rec.pth'))
 model.eval()
 
-warped, dst_points = getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg')
+grid = Grid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg')
 
 def zoomCells(warped, dst_points):
     for point in dst_points.tolist():
@@ -136,5 +136,5 @@ def digits_rec(image_path):
     _, predicted = torch.max(outputs, 1)
     print("Classe predetta:", predicted.item())
 
-zoomCells(warped, dst_points)
+zoomCells(grid.warped, grid.dstPoints)
 
