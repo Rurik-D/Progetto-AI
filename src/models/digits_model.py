@@ -38,7 +38,7 @@ def load_dataset1(dataset_path):
 
 def load_dataset2(df):
     def rinomina_dati(x):
-        path_images = "C:\\Users\\alexb\\Downloads\\dg_data"
+        path_images = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\dg_data"
         x = os.path.join(path_images, x)
         x = cv2.imread(x, 0)
         x = np.array(x, dtype="uint8")
@@ -287,18 +287,16 @@ def save_model(feedback=False):
 
 
 # Loading QMNIST Dataset
-data1 = load_dataset1(select_file("C:\\Users\\alexb\\Downloads\\MNIST-120k"))
-data2 = load_dataset2(read_csv(select_file("C:\\Users\\alexb\\Downloads\\our_digits.csv")))
+data1 = load_dataset1(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Handwritten digits\\MNIST-120k'))
+data2 = load_dataset2(read_csv(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\our_digits.csv')))
 
-data = data1
-for key in data2:
-    key = np.stack((data[key], data2[key]))
-
-print(len(data['data']))
+#concat_data = {}
+#concat_data['data'] = np.concatenate((data1['data'],data2['data']),axis = 0)
+#concat_data['labels'] = np.concatenate((data1['labels'],data2['labels']),axis = 0)
 
 # Splitting dataset for train and test
-train_data, test_data, train_labels, test_labels = train_test_split(data['data'],
-                                                                    data['labels'],
+train_data, test_data, train_labels, test_labels = train_test_split(data2['data'],
+                                                                    data2['labels'],
                                                                     test_size=0.2,
                                                                     random_state=42)
 
@@ -307,8 +305,8 @@ train_dataset = QMNISTDataset(train_data,train_labels)
 test_dataset = QMNISTDataset(test_data,test_labels)
 
 # Defining hyperparameters
-EPOCHS = 10
-BATCH_SIZE = 2000
+EPOCHS = 20
+BATCH_SIZE = 200
 LEARNING_RATE = 0.0001
 
 # Defining the device
