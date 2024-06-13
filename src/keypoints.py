@@ -1,7 +1,7 @@
 import cv2
-
 from tkinter import filedialog
 import numpy as np
+
 def sudoku_filter(img):
     clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
     img = clahe.apply(img)
