@@ -3,6 +3,7 @@ import customtkinter as ctk
 from PIL import Image, ImageTk
 import cv2
 import numpy as np
+import threading
 
 class Lbl_manager:
     """
@@ -13,7 +14,8 @@ class Lbl_manager:
         self.title_lbl = ctk.CTkLabel(root, text='')
         self.theme_lbl = ctk.CTkLabel(root, text='')
         self.credits_lbl= ctk.CTkLabel(root, text="Emanuele D'Agostino\tAlessandro Buccioli\tGiuseppe Borracci")
-        self.loadedImg_lbl= ctk.CTkLabel(root, text='')
+        self.loadedImg_lbl = ctk.CTkLabel(root, text='')
+        self.scanBar_lbl = ctk.CTkLabel(root, text='')
 
 
         self.set_images()
@@ -62,6 +64,15 @@ class Lbl_manager:
             Show the loaded image.
         """
         self.loadedImg_lbl.place(relx=0.7, rely=0.5, anchor=ctk.CENTER)
+
+
+    def start_scanning(self):
+        self.title_lbl = ctk.CTkLabel(self.loadedImg_lbl, text='', fg_color="#01decf")
+
+    
+    def move_scanner(self):
+        pass
+
 
 
     def hide_all(self):
