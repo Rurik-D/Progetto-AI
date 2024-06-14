@@ -1,7 +1,6 @@
 from tkinter import *
 import customtkinter as ctk
 
-
 class Wnd_manager:
     """
         This class manage all the graphics options of
@@ -22,7 +21,7 @@ class Wnd_manager:
         root.geometry("900x550")
         root.maxsize(1100, 650)
         root.minsize(700, 450)
-        root.iconbitmap("img\\sudoku.ico")
+        root.iconbitmap("gui\\img\\sudoku.ico")
         root.title("SolveDoku!")
 
 

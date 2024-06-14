@@ -39,7 +39,7 @@ class Btn_manager:
         
         # Solve menu
         self.solve_btn = ctk.CTkButton(root, height=H, width=W,
-                                       corner_radius=corner_rad)
+                                       corner_radius=corner_rad, command=self.__lbl_man.scanning_switch)
         self.change_btn = ctk.CTkButton(root, height=H, width=W,
                                         corner_radius=corner_rad, command=self.load_image)
         self.mainM_btn = ctk.CTkButton(root, height=H, width=W,
@@ -61,6 +61,7 @@ class Btn_manager:
             Show main menu buttons.
         """
         self.hide_all()
+        self.__lbl_man.scanning_switch(stop=True)
         self.__lbl_man.hide_all()
         self.__lbl_man.show_menu_graphics()
         self.start_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
@@ -107,8 +108,8 @@ class Btn_manager:
             Show solving menu's buttons.
         """
         extensions = ('png', 'jpg', 'jpeg')
+        self.__lbl_man.scanning_switch(stop=True)
         file_path = filedialog.askopenfilename(title=self.currLang['selectFile'])
-
         # Checks if a file has been selected
         if file_path:
             if file_path.split('.')[-1] in extensions:
