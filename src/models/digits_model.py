@@ -38,7 +38,7 @@ def load_dataset1(dataset_path):
 
 def load_dataset2(df):
     def rinomina_dati(x):
-        path_images = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\dg_data"
+        path_images = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\empty_data"
         x = os.path.join(path_images, x)
         x = cv2.imread(x, 0)
         x = np.array(x, dtype="uint8")
@@ -53,6 +53,26 @@ def load_dataset2(df):
     data2['data'] = data2['data'][0]
     
     return data2
+
+
+def load_dataset3(df):
+    def rinomina_dati(x):
+        path_images = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\CPD_Dataset"
+        x = os.path.join(path_images, x)
+        x = cv2.imread(x, 0)
+        x = cv2.bitwise_not(x)
+        x = np.array(x, dtype="uint8")
+        return x
+    df.rename(columns={"image_name":"data", "label":"labels"}, inplace=True)
+    df[df["labels"]>0]
+    df['data'] = df['data'].apply(rinomina_dati)
+    data3 = df.to_dict("list")
+    
+    data3['labels'] = np.expand_dims(np.array(data3['labels'],dtype="int64"), axis=1)
+    data3['data'] = np.expand_dims(np.array(data3['data'], dtype="uint8"), axis=0)
+    data3['data'] = data3['data'][0]
+    
+    return data3
 
 
 def choose_device(feedback=False):
@@ -279,7 +299,7 @@ It saves the weights of the computed PyTorch model in a specified file.
 If "feedback" is set on True, it also displays a confirmation of the saving.
 '''
 def save_model(feedback=False):
-    torch.save(model.state_dict(),"digits_rec(v2).pth") # MOFICARE NOME FILE .PTH
+    torch.save(model.state_dict(),"printed_digits_rec.pth") # MOFICARE NOME FILE .PTH
     
     if feedback:
         print("Model saved")
@@ -287,16 +307,17 @@ def save_model(feedback=False):
 
 
 # Loading QMNIST Dataset
-data1 = load_dataset1(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Handwritten digits\\MNIST-120k'))
-data2 = load_dataset2(read_csv(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\our_digits.csv')))
+#data1 = load_dataset1(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Handwritten digits\\MNIST-120k'))
+data2 = load_dataset2(read_csv(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\empty_img.csv')))
+data3 = load_dataset3(read_csv(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\CPD_labels.csv')))
 
-#concat_data = {}
-#concat_data['data'] = np.concatenate((data1['data'],data2['data']),axis = 0)
-#concat_data['labels'] = np.concatenate((data1['labels'],data2['labels']),axis = 0)
+concat_data = {}
+concat_data['data'] = np.concatenate((data2['data'],data3['data']),axis = 0)
+concat_data['labels'] = np.concatenate((data2['labels'],data3['labels']),axis = 0)
 
 # Splitting dataset for train and test
-train_data, test_data, train_labels, test_labels = train_test_split(data2['data'],
-                                                                    data2['labels'],
+train_data, test_data, train_labels, test_labels = train_test_split(concat_data['data'],
+                                                                    concat_data['labels'],
                                                                     test_size=0.2,
                                                                     random_state=42)
 
@@ -305,8 +326,8 @@ train_dataset = QMNISTDataset(train_data,train_labels)
 test_dataset = QMNISTDataset(test_data,test_labels)
 
 # Defining hyperparameters
-EPOCHS = 20
-BATCH_SIZE = 200
+EPOCHS = 15
+BATCH_SIZE = 1000
 LEARNING_RATE = 0.0001
 
 # Defining the device

@@ -74,10 +74,10 @@ class OurCNN(nn.Module):
         return x
     
 model = OurCNN().to(device)
-model.load_state_dict(torch.load('C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\models\\digits_rec(v2).pth'))
+model.load_state_dict(torch.load('C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\models\\printed_digits_rec.pth'))
 model.eval()
 
-grid = Grid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_289_2517353.jpeg')
+grid = Grid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_141_8839885.jpeg')
 
 
 def zoomCells(warped, dst_points):
@@ -110,12 +110,12 @@ def digits_rec(image_path):
     # image = cv2.imread(image_path, 0)
 
     image = cv2.resize(image_path, (200,200), interpolation=cv2.INTER_LINEAR)
-
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
     image = clahe.apply(gray_image)
     image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
     image = cv2.bitwise_not(image[1])
+    # cv2.rectangle(image, (0, 0), (200, 200), (0, 0, 0), 60)
 
     # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -124,8 +124,7 @@ def digits_rec(image_path):
     #                            cv2.THRESH_BINARY, 11, 2)
     # _, image = cv2.threshold(th, 160, 255, cv2.THRESH_BINARY_INV)
     
-    # cv2.imshow("img", image)
-    # cv2.waitKey(0)
+
     image = cv2.resize(image, (28,28), interpolation=cv2.INTER_AREA)
 
     # Applica le trasformazioni all'immagine
@@ -147,5 +146,15 @@ def digits_rec(image_path):
     _, predicted = torch.max(outputs, 1)
     return predicted.item()
 
-zoomCells(grid.warped, grid.dstPoints)
+def mainFn(warped, grid_points):
+    # for point in grid_points:
+    #     cv2.circle(warped, point, 2, (0, 255, 0), -1)
+
+    cv2.imshow('Sudoku Grid Points', warped)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+mainFn(grid.warped, grid.gridPoints)
+#zoomCells(grid.warped, grid.dstPoints)
 
