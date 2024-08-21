@@ -2,7 +2,7 @@ import customtkinter as ctk
 from threading import Thread
 from time import sleep
 
-class Scanner:
+class ScannerEffect:
     def __init__(self):
         self.vr_label = None
         self.hz_label = None
@@ -15,7 +15,7 @@ class Scanner:
 
         self.colorReset()
 
-    def setLabel(self, container):
+    def setLabels(self, container):
         self.vr_label = ctk.CTkLabel(container, text='', fg_color=f"#{self.getColor()}", height=400, width=1, corner_radius=6)
         self.hz_label = ctk.CTkLabel(container, text='', fg_color=f"#{self.getColor()}", height=1, width=400, corner_radius=2)
 

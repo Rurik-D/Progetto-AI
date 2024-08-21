@@ -267,7 +267,7 @@ It saves the weights of the computed PyTorch model in a specified file.
 If "feedback" is set on True, it also displays a confirmation of the saving.
 '''
 def save_model(feedback=False):
-    torch.save(model.state_dict(),"digits_rec(v2).pth") # MOFICARE NOME FILE .PTH
+    torch.save(model.state_dict(),"handwr_model.pth") # MOFICARE NOME FILE .PTH
     
     if feedback:
         print("Model saved")

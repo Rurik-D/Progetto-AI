@@ -73,15 +73,14 @@ class OurCNN(nn.Module):
         x = self.mlp(x)
         return x
     
-model = OurCNN().to(device)
-model.load_state_dict(torch.load('C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\models\\digits_rec(v2).pth'))
+model = OurCNN()
+model.load_state_dict(torch.load('C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\model\\ai_models\\digits_rec(v2).pth',torch.device('cpu')))
 model.eval()
 
-grid = Grid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_289_2517353.jpeg')
+grid = Grid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_290_2832444.jpeg')
 
 
 def zoomCells(warped, dst_points):
-    print(warped)
     for point in dst_points.tolist():
 
         punto = (int(point[0]),int(point[1]))
@@ -89,18 +88,52 @@ def zoomCells(warped, dst_points):
     
     rows, cols = warped.shape[:2]
     array_sudoku = []
-    for x in range(0, rows-rows//9, (rows//9)):
+    for x in range(0, rows-rows//9+1, (rows//9)):
         riga_sud = []
-        for y in range(0, cols-cols//9, (cols//9)):
-
+        for y in range(0, cols-cols//9+1, (cols//9)):
             M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
             dst_image = cv2.warpAffine(warped, M, (cols, rows))
-            # cv2.imshow("dst_image",dst_image)
-            # cv2.waitKey(0)
-            predict = digits_rec(dst_image)
+            gray = cv2.cvtColor(dst_image, cv2.COLOR_BGR2GRAY)
+            gray = cv2.bitwise_not(gray)
+            # Applica una soglia per binarizzare l'immagine
+            _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+            # Trova i contorni nell'immagine
+            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            # Trova il contorno più grande (presumibilmente il bordo esterno della cella)
+            c = max(contours, key=cv2.contourArea)
+
+            # Crea una maschera nera
+            mask = np.zeros_like(gray)
+
+            # Disegna un riempimento del contorno della cella
+            cv2.drawContours(mask, [c], -1, 255, thickness=cv2.FILLED)
+
+            # Erodi la maschera per escludere il bordo esterno (e lasciare solo il numero)
+            kernel = np.ones((3, 3), np.uint8)
+            mask = cv2.erode(mask, kernel, iterations=2)
+
+            # Applica la maschera all'immagine originale
+            result = cv2.bitwise_and(dst_image, dst_image, mask=mask)
+
+            # Riempie l'esterno del numero con bianco
+            result[mask == 0] = 255
+
+            # Mostra l'immagine risultante
+            if len(array_sudoku) == 6:
+                result = cv2.resize(result, (200, 200), interpolation=cv2.INTER_LINEAR)
+                gray_image = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+                clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+                image = clahe.apply(gray_image)
+                image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
+                image = cv2.bitwise_not(image[1])
+                cv2.imshow("image", image)
+                cv2.waitKey(0)
+            predict = digits_rec(result)
             riga_sud.append(predict)
         array_sudoku.append(riga_sud)
-    print("Vecchio array: [[0, 5, 0, 6, 8, 0, 0, 6, 0], [2, 0, 0, 0, 0, 0, 0, 0, 5], [0, 0, 1, 0, 0, 7, 0, 0, 0], [5, 0, 0, 2, 0, 0, 5, 0, 0], [4, 0, 0, 0, 0, 0, 0, 0, 3], [0, 0, 3, 0, 0, 4, 0, 0, 2], [0, 5, 0, 7, 0, 0, 3, 0, 0], [8, 0, 0, 0, 0, 0, 0, 0, 1], [0, 9, 0, 0, 4, 5, 0, 7, 0]]\n\n")
+    #print("Vecchio array: [[0, 5, 0, 6, 8, 0, 0, 6, 0], [2, 0, 0, 0, 0, 0, 0, 0, 5], [0, 0, 1, 0, 0, 7, 0, 0, 0], [5, 0, 0, 2, 0, 0, 5, 0, 0], [4, 0, 0, 0, 0, 0, 0, 0, 3], [0, 0, 3, 0, 0, 4, 0, 0, 2], [0, 5, 0, 7, 0, 0, 3, 0, 0], [8, 0, 0, 0, 0, 0, 0, 0, 1], [0, 9, 0, 0, 4, 5, 0, 7, 0]]\n\n")
     print(array_sudoku)
 
 def digits_rec(image_path):
@@ -124,8 +157,8 @@ def digits_rec(image_path):
     #                            cv2.THRESH_BINARY, 11, 2)
     # _, image = cv2.threshold(th, 160, 255, cv2.THRESH_BINARY_INV)
     
-    # cv2.imshow("img", image)
-    # cv2.waitKey(0)
+    #cv2.imshow("img", image)
+    #cv2.waitKey(0)
     image = cv2.resize(image, (28,28), interpolation=cv2.INTER_AREA)
 
     # Applica le trasformazioni all'immagine
