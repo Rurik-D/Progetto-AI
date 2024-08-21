@@ -1,7 +1,6 @@
 from tkinter import *
 import customtkinter as ctk
-from controller.window_manager import Wnd_manager
-from controller.main_controller import MenuController
+from controller.main_controller import MainController
 from os import _exit
 
 
@@ -11,8 +10,7 @@ class Main:
     """
     def __init__(self):
         self.root = ctk.CTk()
-        self.wnd_man = Wnd_manager(self.root)
-        self.menuCtrl = MenuController(self.root, self.wnd_man)
+        self.menuCtrl = MenuController(self.root)
 
         self.menuCtrl.switchToMainMenu()
 

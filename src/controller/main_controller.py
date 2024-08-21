@@ -6,14 +6,16 @@ from util.image_converter import cv2_to_pil_image
 from model.grid import Grid
 from view.widgets import Widgets
 from view.scanner_effect import ScannerEffect
+from view.window import Window
 
 
-class MenuController:
+
+class MainController:
     """
         This class manage all the GUI's buttons.
     """
-    def __init__(self, root, wnd_man):       
-        self.wnd_man = wnd_man
+    def __init__(self, root):       
+        self.wnd_man = Window(root)
         self.root = root
         self.lang = "en"
         self.currLang = load_language(self.lang)
