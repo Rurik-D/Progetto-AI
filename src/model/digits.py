@@ -93,48 +93,93 @@ def zoomCells(warped, dst_points):
         for y in range(0, cols-cols//9+1, (cols//9)):
             M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
             dst_image = cv2.warpAffine(warped, M, (cols, rows))
-            gray = cv2.cvtColor(dst_image, cv2.COLOR_BGR2GRAY)
-            gray = cv2.bitwise_not(gray)
-            # Applica una soglia per binarizzare l'immagine
-            _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-
-            # Trova i contorni nell'immagine
-            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-            # Trova il contorno più grande (presumibilmente il bordo esterno della cella)
-            c = max(contours, key=cv2.contourArea)
-
-            # Crea una maschera nera
-            mask = np.zeros_like(gray)
-
-            # Disegna un riempimento del contorno della cella
-            cv2.drawContours(mask, [c], -1, 255, thickness=cv2.FILLED)
-
-            # Erodi la maschera per escludere il bordo esterno (e lasciare solo il numero)
-            kernel = np.ones((3, 3), np.uint8)
-            mask = cv2.erode(mask, kernel, iterations=2)
-
-            # Applica la maschera all'immagine originale
-            result = cv2.bitwise_and(dst_image, dst_image, mask=mask)
-
-            # Riempie l'esterno del numero con bianco
-            result[mask == 0] = 255
-
-            # Mostra l'immagine risultante
-            if len(array_sudoku) == 6:
-                result = cv2.resize(result, (200, 200), interpolation=cv2.INTER_LINEAR)
+            result = cv2.resize(dst_image, (200, 200), interpolation=cv2.INTER_LINEAR)
+            if len(result.shape) == 3 and result.shape[2] == 3:
                 gray_image = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
-                clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
-                image = clahe.apply(gray_image)
-                image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
-                image = cv2.bitwise_not(image[1])
-                cv2.imshow("image", image)
-                cv2.waitKey(0)
-            predict = digits_rec(result)
+            else:
+                gray_image = result
+            
+            clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+            image = clahe.apply(gray_image)
+            image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
+            
+            image = cv2.bitwise_not(image[1])
+            #if len(array_sudoku) == 0 and len(riga_sud) == 3: 
+            processed_image = preprocessing_image(image)
+            print(type(processed_image[0][0]))
+            processed_image = np.float32(processed_image)
+            cv2.imshow("pr_img", processed_image)
+            cv2.waitKey(0)
+            predict = digits_rec(processed_image)
             riga_sud.append(predict)
         array_sudoku.append(riga_sud)
     #print("Vecchio array: [[0, 5, 0, 6, 8, 0, 0, 6, 0], [2, 0, 0, 0, 0, 0, 0, 0, 5], [0, 0, 1, 0, 0, 7, 0, 0, 0], [5, 0, 0, 2, 0, 0, 5, 0, 0], [4, 0, 0, 0, 0, 0, 0, 0, 3], [0, 0, 3, 0, 0, 4, 0, 0, 2], [0, 5, 0, 7, 0, 0, 3, 0, 0], [8, 0, 0, 0, 0, 0, 0, 0, 1], [0, 9, 0, 0, 4, 5, 0, 7, 0]]\n\n")
     print(array_sudoku)
+# def cells(warped):
+#     gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+
+#     # Applica una sfocatura gaussiana per ridurre il rumore
+#     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+#     # Applica una soglia binaria per ottenere una rappresentazione binaria dell'immagine
+#     _, binary = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY_INV)
+
+def show(img):
+    cv2.imshow("img", img)
+    cv2.waitKey(0)
+
+def preprocessing_image(img):
+    rows = np.shape(img)[0]
+    for i in range(rows):
+        #Floodfilling the outermost layer
+        cv2.floodFill(img, None, (0, i), 0)
+        cv2.floodFill(img, None, (i, 0), 0)
+        cv2.floodFill(img, None, (rows-1, i), 0)
+        cv2.floodFill(img, None, (i, rows-1), 0)
+        #Floodfilling the second outermost layer
+        cv2.floodFill(img, None, (1, i), 1)
+        cv2.floodFill(img, None, (i, 1), 1)
+        cv2.floodFill(img, None, (rows - 2, i), 1)
+        cv2.floodFill(img, None, (i, rows - 2), 1)
+    
+    #Finding the bounding box of the number in the cell
+    rowtop = None
+    
+    rowbottom = None
+    colleft = None
+    colright = None
+    thresholdBottom = 50
+    thresholdTop = 50
+    thresholdLeft = 50
+    thresholdRight = 50
+    center = rows // 2
+    for i in range(center, rows):
+        if rowbottom is None:
+            temp = img[i]
+            if sum(temp) < thresholdBottom or i == rows-1:
+                rowbottom = i
+        if rowtop is None:
+            temp = img[rows-i-1]
+            if sum(temp) < thresholdTop or i == rows-1:
+                rowtop = rows-i-1
+        if colright is None:
+            temp = img[:, i]
+            if sum(temp) < thresholdRight or i == rows-1:
+                colright = i
+        if colleft is None:
+            temp = img[:, rows-i-1]
+            if sum(temp) < thresholdLeft or i == rows-1:
+                colleft = rows-i-1
+
+    # Centering the bounding box's contents
+    newimg = np.zeros(np.shape(img))
+    
+    startatX = (rows + colleft - colright)//2
+    startatY = (rows - rowbottom + rowtop)//2
+    for y in range(startatY, (rows + rowbottom - rowtop)//2):
+        for x in range(startatX, (rows - colleft + colright)//2):
+            newimg[y, x] = img[rowtop + y - startatY, colleft + x - startatX]
+    return newimg
 
 def digits_rec(image_path):
 
@@ -142,13 +187,13 @@ def digits_rec(image_path):
 
     # image = cv2.imread(image_path, 0)
 
-    image = cv2.resize(image_path, (200,200), interpolation=cv2.INTER_LINEAR)
+    # image = cv2.resize(image_path, (200,200), interpolation=cv2.INTER_LINEAR)
 
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
-    image = clahe.apply(gray_image)
-    image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
-    image = cv2.bitwise_not(image[1])
+    # gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+    # image = clahe.apply(gray_image)
+    # image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
+    # image = cv2.bitwise_not(image[1])
 
     # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -159,7 +204,7 @@ def digits_rec(image_path):
     
     #cv2.imshow("img", image)
     #cv2.waitKey(0)
-    image = cv2.resize(image, (28,28), interpolation=cv2.INTER_AREA)
+    image = cv2.resize(image_path, (28,28), interpolation=cv2.INTER_AREA)
 
     # Applica le trasformazioni all'immagine
     transform = transforms.Compose([

@@ -6,11 +6,12 @@ from os import _exit
 
 class Main:
     """
-        Custom tkinter main window
+        Custom tkinter main window. Here is where the
+        code starts.
     """
     def __init__(self):
         self.root = ctk.CTk()
-        self.menuCtrl = MenuController(self.root)
+        self.menuCtrl = MainController(self.root)
 
         self.menuCtrl.switchToMainMenu()
 
@@ -18,7 +19,11 @@ class Main:
 
         self.root.mainloop()
 
+
     def onClose(self):
+        """
+            Method runned when the window is closed.
+        """
         self.root.destroy()
         _exit(0)
         

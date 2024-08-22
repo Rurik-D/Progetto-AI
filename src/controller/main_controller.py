@@ -12,7 +12,7 @@ from view.window import Window
 
 class MainController:
     """
-        This class manage all the GUI's buttons.
+        This class manage all the GUI's widgets.
     """
     def __init__(self, root):       
         self.wnd_man = Window(root)
@@ -27,6 +27,9 @@ class MainController:
 
 
     def setButtonsCommand(self):
+        """
+            Sets the command of each button in the window.
+        """
         # Main menu
         self.wdgt.start_btn.configure(command=self.switchToChooseImageMenu)
         self.wdgt.settings_btn.configure(command=self.switchToSettingsMenu)
@@ -50,11 +53,12 @@ class MainController:
         
     def switchToMainMenu(self):
         """
-            Show main menu buttons.
+            Hides all the buttons and labels, showing only the widgets on the main
+            menù screen.
         """
         self.hideAllButtons()
-        self.scanning_switch(stop=True)
         self.hideAllLabels()
+        self.scanning_switch(stop=True)
         self.show_menu_graphics()
         self.wdgt.start_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
         self.wdgt.settings_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
@@ -64,7 +68,8 @@ class MainController:
 
     def switchToChooseImageMenu(self):
         """
-            Show the image loading menu's buttons.
+            Hides all the buttons, showing only the widgets on the choose image
+            menù screen.
         """
         self.hideAllButtons()
         self.wdgt.load_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
@@ -74,7 +79,8 @@ class MainController:
 
     def switchToSolveMenu(self, imgPath):
         """
-            Show solving menu's buttons.
+            Hides all the buttons and labels, showing only the widgets on the solve
+            menù screen.
         """
         self.hideAllButtons()
         self.hideAllLabels()
@@ -87,7 +93,8 @@ class MainController:
 
     def switchToSettingsMenu(self):
         """
-            Show settings menu's buttons.
+            Hides all the buttons, showing only the widgets on the settings
+            menù screen.
         """
         self.hideAllButtons()
         self.wdgt.lang_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
