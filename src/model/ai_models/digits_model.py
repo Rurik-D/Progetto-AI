@@ -279,7 +279,11 @@ It saves the weights of the computed PyTorch model in a specified file.
 If "feedback" is set on True, it also displays a confirmation of the saving.
 '''
 def save_model(feedback=False):
-    torch.save(model.state_dict(),"digits_rec(v2).pth") # MOFICARE NOME FILE .PTH
+    name = input("How do you want to call the model created?\n(If no name in input, default name will be used)\n-->")
+    if name == "":
+        name = "digits_rec(v2)"
+    name = name + ".pth"
+    torch.save(model.state_dict(),name)
     
     if feedback:
         print("Model saved")
@@ -287,16 +291,45 @@ def save_model(feedback=False):
 
 
 # Loading QMNIST Dataset
-data1 = load_dataset1(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Handwritten digits\\MNIST-120k'))
-data2 = load_dataset2(read_csv(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\our_digits.csv')))
+DATA1_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Handwritten digits\\MNIST-120k'
+DATA2_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\our_digits.csv'
+data1 = load_dataset1(select_file(DATA1_PATH))
+data2 = load_dataset2(read_csv(select_file(DATA2_PATH)))
 
-#concat_data = {}
-#concat_data['data'] = np.concatenate((data1['data'],data2['data']),axis = 0)
-#concat_data['labels'] = np.concatenate((data1['labels'],data2['labels']),axis = 0)
+'''
+It combines the two datasets in a new unique dataset.
+'''
+def merge_datasets(data1, data2):
+    concat_data = {}
+    concat_data['data'] = np.concatenate((data1['data'],data2['data']),axis = 0)
+    concat_data['labels'] = np.concatenate((data1['labels'],data2['labels']),axis = 0)
+    return concat_data['data'], concat_data['labels']
+
+'''
+It allows the user to choose which dataset have to be used.
+The choices are:
+    - Handwritten digits dataset
+    - Printed digits dataset
+    - Both datasets combined
+'''
+def select_dataset(data1, data2):
+    print("Select the chosen dataset:\n\t0: Handwritten digits dataset\n\t1: Printed digits dataset\n\t2: Both")
+    choice = input("-->")
+    if choice == "0":
+        return data1['data'], data1['labels']
+    elif choice == "1":
+        return data2['data'], data2['labels']
+    elif choice == "2":
+        return merge_datasets(data1, data2)
+    else:
+        print("Input not valid.\nInsert a number among '0', '1', '2'")
+        return select_dataset(data1, data2)
+
+data, labels = select_dataset(data1, data2)
 
 # Splitting dataset for train and test
-train_data, test_data, train_labels, test_labels = train_test_split(data2['data'],
-                                                                    data2['labels'],
+train_data, test_data, train_labels, test_labels = train_test_split(data,
+                                                                    labels,
                                                                     test_size=0.2,
                                                                     random_state=42)
 
