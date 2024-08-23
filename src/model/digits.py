@@ -4,14 +4,14 @@ from tkinter import filedialog
 
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
 import torch
 from torch import nn
 from torchvision import transforms
 
-from PIL import Image
-
+DATABASE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\model\\ai_models\\digits_rec(v2).pth'
+IMAGE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'
+GRID_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_290_2832444.jpeg'
 
 def select_file(filepath=None):
     if filepath != None:
@@ -30,9 +30,6 @@ def choose_device(feedback=False):
         print("Device in use:", device)
     
     return device
-
-device = choose_device()
-image_path = select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg')
 
 class OurCNN(nn.Module):
     def __init__(self):
@@ -72,63 +69,38 @@ class OurCNN(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.mlp(x)
         return x
-    
-model = OurCNN()
-model.load_state_dict(torch.load('C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\model\\ai_models\\digits_rec(v2).pth',torch.device('cpu')))
-model.eval()
 
-grid = Grid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_290_2832444.jpeg')
+def dst_points_drawer(warped, dstPoints):
+    for point in dstPoints.tolist():
+        X = int(point[0])
+        Y = int(point[1])
+        coordinates = (X, Y)
+        DOT_SIZE = 5
+        GREEN = (0, 255, 0)
+        cv2.circle(warped, coordinates, DOT_SIZE, GREEN, -1)
 
+def BGR2GRAY_selective(image):
+    if len(image.shape) == 3 and image.shape[2] == 3:
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray_image = image
+    return gray_image
 
-def zoomCells(warped, dst_points):
-    for point in dst_points.tolist():
+def clahe_equalizer(image):
+    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+    image = clahe.apply(image)
+    return image
 
-        punto = (int(point[0]),int(point[1]))
-        cv2.circle(warped, punto, 5, (0, 255, 0), -1)
-    
-    rows, cols = warped.shape[:2]
-    array_sudoku = []
-    for x in range(0, rows-rows//9+1, (rows//9)):
-        riga_sud = []
-        for y in range(0, cols-cols//9+1, (cols//9)):
-            M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
-            dst_image = cv2.warpAffine(warped, M, (cols, rows))
-            result = cv2.resize(dst_image, (200, 200), interpolation=cv2.INTER_LINEAR)
-            if len(result.shape) == 3 and result.shape[2] == 3:
-                gray_image = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
-            else:
-                gray_image = result
-            
-            clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
-            image = clahe.apply(gray_image)
-            image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
-            
-            image = cv2.bitwise_not(image[1])
-            #if len(array_sudoku) == 0 and len(riga_sud) == 3: 
-            processed_image = preprocessing_image(image)
-            print(type(processed_image[0][0]))
-            processed_image = np.float32(processed_image)
-            cv2.imshow("pr_img", processed_image)
-            cv2.waitKey(0)
-            predict = digits_rec(processed_image)
-            riga_sud.append(predict)
-        array_sudoku.append(riga_sud)
-    #print("Vecchio array: [[0, 5, 0, 6, 8, 0, 0, 6, 0], [2, 0, 0, 0, 0, 0, 0, 0, 5], [0, 0, 1, 0, 0, 7, 0, 0, 0], [5, 0, 0, 2, 0, 0, 5, 0, 0], [4, 0, 0, 0, 0, 0, 0, 0, 3], [0, 0, 3, 0, 0, 4, 0, 0, 2], [0, 5, 0, 7, 0, 0, 3, 0, 0], [8, 0, 0, 0, 0, 0, 0, 0, 1], [0, 9, 0, 0, 4, 5, 0, 7, 0]]\n\n")
-    print(array_sudoku)
-# def cells(warped):
-#     gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+def filters_applier(raw_image):
+    IMAGE_DEFAULT_SIZE = (200, 200)
+    resized_image = cv2.resize(raw_image, IMAGE_DEFAULT_SIZE, interpolation=cv2.INTER_LINEAR)
+    gray_image = BGR2GRAY_selective(resized_image)
+    equalized_image = clahe_equalizer(gray_image)
+    thrs_image = cv2.threshold(equalized_image, 90, 255, cv2.THRESH_BINARY)
+    preprocessed_image = cv2.bitwise_not(thrs_image[1])
+    return preprocessed_image
 
-#     # Applica una sfocatura gaussiana per ridurre il rumore
-#     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-
-#     # Applica una soglia binaria per ottenere una rappresentazione binaria dell'immagine
-#     _, binary = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY_INV)
-
-def show(img):
-    cv2.imshow("img", img)
-    cv2.waitKey(0)
-
-def preprocessing_image(img):
+def cell_cleaner(img):
     rows = np.shape(img)[0]
     for i in range(rows):
         #Floodfilling the outermost layer
@@ -179,41 +151,43 @@ def preprocessing_image(img):
     for y in range(startatY, (rows + rowbottom - rowtop)//2):
         for x in range(startatX, (rows - colleft + colright)//2):
             newimg[y, x] = img[rowtop + y - startatY, colleft + x - startatX]
-    return newimg
+    return np.float32(newimg)
+
+def zoomCells(warped, dst_points):
+    rows, cols = warped.shape[:2]
+    array_sudoku = []
+    
+    ROW_SIZE = rows-rows//9
+    CELL_LENGTH = rows//9
+    COL_SIZE = cols-cols//9
+    CELL_HEIGHT = cols//9
+    
+    ZOOM_LEVEL = 9
+    
+    for x in range(0, ROW_SIZE+1, CELL_LENGTH):
+        riga_sud = []
+        X_traslation = -x*ZOOM_LEVEL
+        for y in range(0, COL_SIZE+1, CELL_HEIGHT):
+            
+            Y_traslation = -y*ZOOM_LEVEL
+            M = np.float32([[ZOOM_LEVEL, 0, Y_traslation], [0, ZOOM_LEVEL, X_traslation]])
+            dst_image = cv2.warpAffine(warped, M, (cols, rows))
+        
+            filtered_image = filters_applier(dst_image)
+            
+            cleaned_image = cell_cleaner(filtered_image)
+
+            predict = digits_rec(cleaned_image)
+            riga_sud.append(predict)
+        array_sudoku.append(riga_sud)
+    print(array_sudoku)
 
 def digits_rec(image_path):
-
-    # image = Image.open(image_path)
-
-    # image = cv2.imread(image_path, 0)
-
-    # image = cv2.resize(image_path, (200,200), interpolation=cv2.INTER_LINEAR)
-
-    # gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
-    # image = clahe.apply(gray_image)
-    # image = cv2.threshold(image, 90, 255, cv2.THRESH_BINARY)
-    # image = cv2.bitwise_not(image[1])
-
-    # gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    # medianBlur = cv2.medianBlur(blurred,5)
-    # th = cv2.adaptiveThreshold(medianBlur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-    #                            cv2.THRESH_BINARY, 11, 2)
-    # _, image = cv2.threshold(th, 160, 255, cv2.THRESH_BINARY_INV)
-    
-    #cv2.imshow("img", image)
-    #cv2.waitKey(0)
-    image = cv2.resize(image_path, (28,28), interpolation=cv2.INTER_AREA)
+    MODEL_IMAGE_SIZE = (28,28)
+    image = cv2.resize(image_path, MODEL_IMAGE_SIZE, interpolation=cv2.INTER_AREA)
 
     # Applica le trasformazioni all'immagine
-    transform = transforms.Compose([
-        #transforms.Resize((28, 28)),
-        #transforms.Grayscale(num_output_channels=1),# Ridimensiona l'immagine alle dimensioni di input del modello
-        transforms.ToTensor()    # Converte l'immagine in un tensore
-        #transforms.Lambda(invert_colors)
-        
-    ])
+    transform = transforms.Compose([transforms.ToTensor()])
 
     # Applica le trasformazioni e aggiunge una dimensione di batch
     image_tensor = transform(image).unsqueeze(0)
@@ -225,5 +199,14 @@ def digits_rec(image_path):
     _, predicted = torch.max(outputs, 1)
     return predicted.item()
 
-zoomCells(grid.warped, grid.dstPoints)
+device = choose_device()
+image_path = select_file(IMAGE_PATH)
 
+model = OurCNN()
+model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device)))
+model.eval()
+
+grid = Grid(GRID_PATH)
+
+dst_points_drawer(grid.warped, grid.dstPoints)
+zoomCells(grid.warped, grid.dstPoints)
