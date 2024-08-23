@@ -17,21 +17,30 @@ def applyFilters(image):
 
     return binary
 
-def offset(image, x, y):
+def offset(im2, x, y):
     BLACK = 0
-    WHITE = 1
+    WHITE = 255
     y1 = y + 10
+    color = im2[x][y]
     off = 0
-    if image[x][y1] == WHITE:
-        return 0
-    while image[x][y1] == BLACK:
-        y1 += 1
-        off += 1
+    if im2[x][y1] == WHITE:
+        return 0 
+    else:
+        while im2[x][y1] == color:
+            print(img2[x])
+            print(f'color: {color}, img2: {img2[x][y1]}')
+            cv2.circle(img2, (x, y1), 2, (0, 255, 0), -1)
+
+            x += 1
+            off += 1
+    cv2.imshow("img2", img2)
+    cv2.waitKey(0)
+    print(im2[x][y1])
     return off
     
 
 # 1. Carica l'immagine
-image = cv2.imread('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\digit-sudoku\\sd3.png')
+image = cv2.imread('C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\digit-sudoku\\sd9.jpg')
 
 img2 = applyFilters(image)
 # 4. Trova i contorni
@@ -69,13 +78,15 @@ if len(approx) == 4:
     cella = orLine // 9
 
     x = rect[0][0]
-    off = offset(image, rect[0][0], rect[0][1])
+    cv2.imshow("img2", img2)
+    cv2.waitKey(0)
+    off = offset(img2, rect[0][0], rect[0][1])
     for i in range(0, 10):
     
-        cv2.circle(image, (x , rect[0][1]), 5, (0, 255, 0), -1)
+        cv2.circle(image, (x + off , rect[0][1] ), 2, (0, 255, 0), -1)
         x += cella
     # Mostra l'immagine con gli angoli trovati
-    cv2.imshow("Sudoku Angoli", image)
+    cv2.imshow("Sudoku finale", image)
     cv2.waitKey(0)
 else:
     print("Il contorno non ha 4 lati")
