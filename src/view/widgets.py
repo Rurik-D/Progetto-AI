@@ -1,33 +1,30 @@
 import customtkinter as ctk
-from util.language import load_language
 from PIL import Image
 from os import path
 
 
 class Widgets:
     def __init__(self, root):
-        lang = load_language("en")
-
         corner = 15
         W = 150
         H = 50
 
         # Main menu
-        self.start_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['start'])
-        self.settings_btn = ctk.CTkButton(root,height=H, width=W, corner_radius=corner, text=lang['settings'])
-        self.exit_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['exit'])
+        self.start_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
+        self.settings_btn = ctk.CTkButton(root,height=H, width=W, corner_radius=corner)
+        self.exit_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
         
         # Choose-image menu
-        self.load_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['load'])
-        self.back_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['back'])
+        self.load_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
+        self.back_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
         
         # Solve menu
-        self.solve_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['solve'])
-        self.change_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['change'])
-        self.mainM_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['mainMenu'])
+        self.solve_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
+        self.change_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
+        self.mainM_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
         
         # Settings menu
-        self.lang_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner, text=lang['lang'])
+        self.lang_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
         
         # Theme switch
         self.theme_switch = ctk.CTkSwitch(root, text="", height=20, width=30)

@@ -98,23 +98,23 @@ def sortPoints(pts):
     return rect
 
 
-def zoomCells(warped, dst_points):
-    for point in dst_points.tolist():
-        print(type(point))
-        punto = (point[0],point[1])
-        print(punto)
-        cv2.circle(warped, punto, 5, (0, 255, 0), -1)
+# def zoomCells(warped, dst_points):
+#     for point in dst_points.tolist():
+#         print(type(point))
+#         punto = (point[0],point[1])
+#         print(punto)
+#         cv2.circle(warped, punto, 5, (0, 255, 0), -1)
     
-    rows, cols = warped.shape[:2]
+#     rows, cols = warped.shape[:2]
 
-    for x in range(0, rows-rows//9, rows//9):
-        print(x)
-        for y in range(0, cols-cols//9, cols//9):
-            print(y)
-            M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
-            dst_image = cv2.warpAffine(warped, M, (cols, rows))
-            cv2.imshow("image", dst_image)
-            cv2.waitKey(0)
+#     for x in range(0, rows-rows//9, rows//9):
+#         print(x)
+#         for y in range(0, cols-cols//9, cols//9):
+#             print(y)
+#             M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
+#             dst_image = cv2.warpAffine(warped, M, (cols, rows))
+#             cv2.imshow("image", dst_image)
+#             cv2.waitKey(0)
 
 
 

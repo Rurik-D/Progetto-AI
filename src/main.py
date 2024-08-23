@@ -12,13 +12,8 @@ class Main:
     def __init__(self):
         self.root = ctk.CTk()
         self.menuCtrl = MainController(self.root)
-
-        self.menuCtrl.switchToMainMenu()
-
         self.root.protocol("WM_DELETE_WINDOW", self.onClose)
-
         self.root.mainloop()
-
 
     def onClose(self):
         """

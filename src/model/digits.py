@@ -11,7 +11,7 @@ from torchvision import transforms
 
 DATABASE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\model\\ai_models\\digits_rec(v2).pth'
 IMAGE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'
-GRID_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_290_2832444.jpeg'
+GRID_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\digit-sudoku\\sd3.png'
 
 def select_file(filepath=None):
     if filepath != None:
@@ -153,8 +153,63 @@ def cell_cleaner(img):
             newimg[y, x] = img[rowtop + y - startatY, colleft + x - startatX]
     return np.float32(newimg)
 
-def zoomCells(warped, dst_points):
+
+def clean_board(warped):
     rows, cols = warped.shape[:2]
+    CELL_LENGTH = rows//9
+    CELL_HEIGHT = cols//9
+
+    # Invert the image
+    warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+    
+    inverted_image = cv2.bitwise_not(warped)
+
+    # Apply adaptive thresholding to make the grid lines more pronounced
+    thresh = cv2.adaptiveThreshold(inverted_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, -2)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    dilated_img = cv2.dilate(thresh, kernel, iterations=1)
+
+
+    # Remove horizontal lines
+    horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (CELL_LENGTH-1, 1))
+    detect_horizontal = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
+
+    # Remove vertical lines
+    vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, CELL_HEIGHT-1))
+    detect_vertical = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, vertical_kernel, iterations=2)
+
+    # Combine the horizontal and vertical lines
+    grid_lines = cv2.add(detect_horizontal, detect_vertical)
+    cv2.imshow("grif_lines", grid_lines)
+    cv2.waitKey(0)
+    # Invert grid lines to create a mask
+    mask = cv2.bitwise_not(grid_lines)
+    cv2.imshow("mask", mask)
+    cv2.waitKey(0)
+
+    # Use the mask to remove lines from the original inverted image
+    result = cv2.bitwise_and(inverted_image, mask)
+
+    # Apply additional morphological operations to clean up the image
+    kernel = np.ones((3, 3), np.uint8)
+    cleaned_result = cv2.morphologyEx(result, cv2.MORPH_CLOSE, kernel)
+
+    # Invert the result back to original grayscale
+    final_result = cv2.bitwise_not(cleaned_result)
+
+    # Optionally, apply blurring to further smooth the result
+    final_result = cv2.medianBlur(final_result, 3)
+
+    return final_result
+
+
+def zoomCells(warped, dst_points):
+    cv2.imshow("wp", warped)
+    cv2.waitKey(0)
+    rows, cols = warped.shape[:2]
+    cleaned_image = clean_board(warped)
+    cv2.imshow("clean warped", cleaned_image)
+    cv2.waitKey(0)
     array_sudoku = []
     
     ROW_SIZE = rows-rows//9
@@ -171,13 +226,15 @@ def zoomCells(warped, dst_points):
             
             Y_traslation = -y*ZOOM_LEVEL
             M = np.float32([[ZOOM_LEVEL, 0, Y_traslation], [0, ZOOM_LEVEL, X_traslation]])
-            dst_image = cv2.warpAffine(warped, M, (cols, rows))
-        
+            dst_image = cv2.warpAffine(cleaned_image, M, (cols, rows))
+            cv2.imshow("dst", dst_image)
+            cv2.waitKey(0)
             filtered_image = filters_applier(dst_image)
             
-            cleaned_image = cell_cleaner(filtered_image)
-
-            predict = digits_rec(cleaned_image)
+            #cleaned_image = cell_cleaner(filtered_image)
+            cv2.imshow("filtered_image", filtered_image)
+            cv2.waitKey(0)
+            predict = digits_rec(filtered_image)
             riga_sud.append(predict)
         array_sudoku.append(riga_sud)
     print(array_sudoku)

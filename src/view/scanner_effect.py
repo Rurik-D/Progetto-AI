@@ -4,8 +4,8 @@ from time import sleep
 
 class ScannerEffect:
     def __init__(self):
-        self.vr_label = None
-        self.hz_label = None
+        self.vScannerLbl = None
+        self.hScannerLbl = None
         self.moving = False
         self.scanThread = None
         self.color = None
@@ -15,20 +15,21 @@ class ScannerEffect:
 
         self.colorReset()
 
-    def setLabels(self, container):
-        self.vr_label = ctk.CTkLabel(container, text='', fg_color=f"#{self.getColor()}", height=400, width=1, corner_radius=6)
-        self.hz_label = ctk.CTkLabel(container, text='', fg_color=f"#{self.getColor()}", height=1, width=400, corner_radius=2)
+
+    def setScannerLabels(self, container:ctk.CTkLabel):
+        self.vScannerLbl = ctk.CTkLabel(container, text='', fg_color=f"#{self.getColor()}", height=400, width=1, corner_radius=6)
+        self.hScannerLbl = ctk.CTkLabel(container, text='', fg_color=f"#{self.getColor()}", height=1, width=400, corner_radius=2)
 
 
-    def getColor(self):
+    def getColor(self) -> str:
         return hex(self.color)[2:].rjust(6, '0')
 
     def colorReset(self):
         self.color = 122575
 
     def packScanner(self):
-        self.vr_label.place(relx=0.025, rely=0.5, anchor=ctk.CENTER)
-        self.hz_label.place(relx=0.5, rely=0.025, anchor=ctk.CENTER)
+        self.vScannerLbl.place(relx=0.025, rely=0.5, anchor=ctk.CENTER)
+        self.hScannerLbl.place(relx=0.5, rely=0.025, anchor=ctk.CENTER)
 
 
     def start(self):
@@ -63,16 +64,23 @@ class ScannerEffect:
 
             sleep(self.delay)
 
-        self.vr_label.place_forget()
-        self.hz_label.place_forget()
+        self.vScannerLbl.place_forget()
+        self.hScannerLbl.place_forget()
 
 
-    def updateLabels(self, pos):
-        self.vr_label.place_forget()
-        self.hz_label.place_forget()
-        self.vr_label.configure(fg_color=f"#{self.getColor()}")
-        self.hz_label.configure(fg_color=f"#{self.getColor()}")
-        self.vr_label.place(relx=pos, rely=0.5, anchor=ctk.CENTER)
-        self.hz_label.place(relx=0.5, rely=pos, anchor=ctk.CENTER)
+    def scanning_switch(self, stop=False):
+        if self.moving or stop:
+            self.stop()
+        else:
+            self.packScanner()
+            self.start()
+
+    def updateLabels(self, pos:float):
+        self.vScannerLbl.place_forget()
+        self.hScannerLbl.place_forget()
+        self.vScannerLbl.configure(fg_color=f"#{self.getColor()}")
+        self.hScannerLbl.configure(fg_color=f"#{self.getColor()}")
+        self.vScannerLbl.place(relx=pos, rely=0.5, anchor=ctk.CENTER)
+        self.hScannerLbl.place(relx=0.5, rely=pos, anchor=ctk.CENTER)
     
 

@@ -2,7 +2,7 @@ from tkinter import *
 import customtkinter as ctk
 from os import path
 
-class Wnd_manager:
+class Window:
     """
         This class manage all the graphics options of
         the window.
@@ -19,16 +19,15 @@ class Wnd_manager:
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
 
-        
-
         root.geometry("900x550")
         root.maxsize(1100, 650)
+        
         root.minsize(700, 450)
         root.iconbitmap(path.abspath(".") + "\\src\\resources\\images\\sudoku.ico")
         root.title("SolveDoku!")
 
 
-    def switch_theme(self):
+    def switchTheme(self):
         """
             Switch theme from dark to light and vice versa.
         """

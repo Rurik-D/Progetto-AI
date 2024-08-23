@@ -1,7 +1,7 @@
 from tkinter import filedialog
 from tkinter import messagebox
 import customtkinter as ctk
-from util.language import load_language
+from util.language import Language
 from util.image_converter import cv2_to_pil_image
 from model.grid import Grid
 from view.widgets import Widgets
@@ -9,21 +9,20 @@ from view.scanner_effect import ScannerEffect
 from view.window import Window
 
 
-
 class MainController:
     """
         This class manage all the GUI's widgets.
     """
     def __init__(self, root):       
-        self.wnd_man = Window(root)
         self.root = root
-        self.lang = "en"
-        self.currLang = load_language(self.lang)
-        self.scanEffect = ScannerEffect()
-
+        self.wndMan = Window(root)
         self.wdgt = Widgets(root)
-
+        self.scanEffect = ScannerEffect()
+        self.lang = Language()
+        
         self.setButtonsCommand()
+        self.updateBtnLang()
+        self.switchToMainMenu()
 
 
     def setButtonsCommand(self):
@@ -34,21 +33,17 @@ class MainController:
         self.wdgt.start_btn.configure(command=self.switchToChooseImageMenu)
         self.wdgt.settings_btn.configure(command=self.switchToSettingsMenu)
         self.wdgt.exit_btn.configure(command=self.root.destroy)
-        
         # Image load menu
         self.wdgt.load_btn.configure(command=self.openChooseImageWindow)
         self.wdgt.back_btn.configure(command=self.switchToMainMenu)
-        
         # Solve menu
-        self.wdgt.solve_btn.configure(command=self.scanning_switch)
+        self.wdgt.solve_btn.configure(command=self.scanEffect.scanning_switch)
         self.wdgt.change_btn.configure(command=self.openChooseImageWindow)
         self.wdgt.mainM_btn.configure(command=self.switchToMainMenu)
-        
         # Settings menu
-        self.wdgt.lang_btn.configure(command=self.change_lang)
-        
+        self.wdgt.lang_btn.configure(command=self.swapLanguage)
         # Theme switch
-        self.wdgt.theme_switch.configure(command=self.wnd_man.switch_theme)
+        self.wdgt.theme_switch.configure(command=self.wndMan.switchTheme)
 
         
     def switchToMainMenu(self):
@@ -58,12 +53,14 @@ class MainController:
         """
         self.hideAllButtons()
         self.hideAllLabels()
-        self.scanning_switch(stop=True)
-        self.show_menu_graphics()
+        self.scanEffect.scanning_switch(stop=True)
         self.wdgt.start_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
         self.wdgt.settings_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.wdgt.exit_btn.place(relx=0.5, rely=0.75, anchor=ctk.CENTER)
         self.wdgt.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
+        self.wdgt.title_lbl.place(relx=0.5, rely=0.18, anchor=ctk.CENTER)
+        self.wdgt.credits_lbl.place(relx=0.5, rely=0.97, anchor=ctk.CENTER)
+        self.wdgt.theme_lbl.place(relx=0.96, rely=0.06, anchor=ctk.CENTER)
 
 
     def switchToChooseImageMenu(self):
@@ -77,15 +74,16 @@ class MainController:
         self.wdgt.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
 
 
-    def switchToSolveMenu(self, imgPath):
+    def switchToSolveMenu(self, imgPath:str):
         """
             Hides all the buttons and labels, showing only the widgets on the solve
             menù screen.
         """
         self.hideAllButtons()
         self.hideAllLabels()
-        self.setChosenImg(imgPath)
-        self.showChosenImg()
+        self.updateChoosenImageLabel(imgPath)
+        self.scanEffect.setScannerLabels(self.wdgt.chosenImg_lbl)
+        self.wdgt.chosenImg_lbl.place(relx=0.7, rely=0.5, anchor=ctk.CENTER)
         self.wdgt.solve_btn.place(relx=0.2, rely=0.35, anchor=ctk.CENTER)
         self.wdgt.change_btn.place(relx=0.2, rely=0.5, anchor=ctk.CENTER)
         self.wdgt.mainM_btn.place(relx=0.2, rely=0.65, anchor=ctk.CENTER)
@@ -98,83 +96,67 @@ class MainController:
         """
         self.hideAllButtons()
         self.wdgt.lang_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
-        self.wdgt.back_btn .place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
+        self.wdgt.back_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.wdgt.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
-
-
-    def show_menu_graphics(self):
-        """
-            Show all the graphics of the main menu.
-        """
-        self.wdgt.title_lbl.place(relx=0.5, rely=0.18, anchor=ctk.CENTER)
-        self.wdgt.credits_lbl.place(relx=0.5, rely=0.97, anchor=ctk.CENTER)
-        self.wdgt.theme_lbl.place(relx=0.96, rely=0.06, anchor=ctk.CENTER)
 
 
     def openChooseImageWindow(self):
         """
-            Show solving menu's buttons.
+            Open a file-explorer window which allows the user to select the
+            image of a Sudoku that want to solve.
+            If the image is not a Sudoku, or the file is not an image, an error
+            message appears.
         """
-        self.scanning_switch(stop=True)
-        file_path = filedialog.askopenfilename(title=self.currLang['selectFile'])
+        self.scanEffect.scanning_switch(stop=True)
+        file_path = filedialog.askopenfilename(title=self.lang.langMap['selectFile'])
+        error = False
+
         # Checks if a file has been selected
         if file_path:
+            # Checks if the selected file is an image
             if file_path.split('.')[-1] in ('png', 'jpg', 'jpeg'):
                 grid = Grid(file_path)
-
+                # Checks if the image is a sudoku
                 if grid.isGrid:
                     self.switchToSolveMenu(grid.warped)
                 else:
-                    messagebox.showwarning(self.currLang['adv'], self.currLang['selectImg']) 
+                    error = True
             else:
-                messagebox.showwarning(self.currLang['adv'], self.currLang['selectImg'])
+                error = True
+
+        if error:
+            messagebox.showwarning(self.lang.langMap['adv'], self.lang.langMap['selectImg'])
                 
 
-    def setChosenImg(self, image):
+    def updateChoosenImageLabel(self, imgPath:str):
         """
-            Set the image by the loaded path.
+            Converts the path to an image, then sets the chosenImg_lbl with
+            the chosen image.
         """
-        image = cv2_to_pil_image(image)
+        image = cv2_to_pil_image(imgPath)
 
         tk_img = ctk.CTkImage(light_image=image, dark_image=image, size=(400, 400))
         self.wdgt.chosenImg_lbl = ctk.CTkLabel(self.root, text='', height=415, fg_color="gray", corner_radius=8, image=tk_img)
 
 
-    def showChosenImg(self):
-        """
-            Show the loaded image.
-        """
-        self.scanEffect.setLabels(self.wdgt.chosenImg_lbl)
-        self.wdgt.chosenImg_lbl.place(relx=0.7, rely=0.5, anchor=ctk.CENTER)
+    def swapLanguage(self):
+        self.lang.swapLanguage()
+        self.updateBtnLang()
 
 
-    def scanning_switch(self, stop=False):
-        if self.scanEffect.moving or stop:
-            self.scanEffect.stop()
-        else:
-            self.scanEffect.packScanner()
-            self.scanEffect.start()
-
-
-    def change_lang(self):
-        self.lang = 'en' if self.lang == 'it' else 'it'
-        self.currLang = load_language(self.lang)
-        self.update_btn_lang()
-
-
-    def update_btn_lang(self):
+    def updateBtnLang(self):
         """
             Loads the new languange and updates al the buttons's text
         """
-        self.wdgt.start_btn.configure(text=self.currLang ['start'])
-        self.wdgt.settings_btn.configure(text=self.currLang ['settings'])
-        self.wdgt.exit_btn.configure(text=self.currLang ['exit'])
-        self.wdgt.load_btn.configure(text=self.currLang ['load'])
-        self.wdgt.back_btn.configure(text=self.currLang ['back'])
-        self.wdgt.solve_btn.configure(text=self.currLang ['solve'])
-        self.wdgt.change_btn.configure(text=self.currLang ['change'])
-        self.wdgt.mainM_btn.configure(text=self.currLang ['mainMenu'])
-        self.wdgt.lang_btn.configure(text=self.currLang ['lang'])
+        self.wdgt.start_btn.configure(text=self.lang.langMap['start'])
+        self.wdgt.settings_btn.configure(text=self.lang.langMap['settings'])
+        self.wdgt.exit_btn.configure(text=self.lang.langMap['exit'])
+        self.wdgt.load_btn.configure(text=self.lang.langMap['load'])
+        self.wdgt.back_btn.configure(text=self.lang.langMap['back'])
+        self.wdgt.solve_btn.configure(text=self.lang.langMap['solve'])
+        self.wdgt.change_btn.configure(text=self.lang.langMap['change'])
+        self.wdgt.mainM_btn.configure(text=self.lang.langMap['mainMenu'])
+        self.wdgt.lang_btn.configure(text=self.lang.langMap['lang'])
 
 
     def hideAllButtons(self):
