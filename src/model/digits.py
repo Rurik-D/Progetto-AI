@@ -87,7 +87,7 @@ def BGR2GRAY_selective(image):
     return gray_image
 
 def clahe_equalizer(image):
-    clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
+    clahe = cv2.createCLAHE(clipLimit=6.0, tileGridSize=(9,9))
     image = clahe.apply(image)
     return image
 
