@@ -1,5 +1,5 @@
 from grid import Grid
-
+from sdk_solver import *
 from tkinter import filedialog
 
 import cv2
@@ -10,8 +10,8 @@ from torch import nn
 from torchvision import transforms
 
 DATABASE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\model\\ai_models\\digits_rec(v2).pth'
-IMAGE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg'
-GRID_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\digit-sudoku\\sd3.png'
+IMAGE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_53_9638115.jpeg'
+GRID_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_53_9638115.jpeg'
 
 def select_file(filepath=None):
     if filepath != None:
@@ -180,12 +180,12 @@ def clean_board(warped):
 
     # Combine the horizontal and vertical lines
     grid_lines = cv2.add(detect_horizontal, detect_vertical)
-    cv2.imshow("grif_lines", grid_lines)
-    cv2.waitKey(0)
+    ##cv2.imshow("grif_lines", grid_lines)
+    ##cv2.waitKey(0)
     # Invert grid lines to create a mask
     mask = cv2.bitwise_not(grid_lines)
-    cv2.imshow("mask", mask)
-    cv2.waitKey(0)
+    ##cv2.imshow("mask", mask)
+    ##cv2.waitKey(0)
 
     # Use the mask to remove lines from the original inverted image
     result = cv2.bitwise_and(inverted_image, mask)
@@ -204,12 +204,12 @@ def clean_board(warped):
 
 
 def zoomCells(warped, dst_points):
-    cv2.imshow("wp", warped)
-    cv2.waitKey(0)
+    # cv2.imshow("wp", warped)
+    # cv2.waitKey(0)
     rows, cols = warped.shape[:2]
     cleaned_image = clean_board(warped)
-    cv2.imshow("clean warped", cleaned_image)
-    cv2.waitKey(0)
+    # cv2.imshow("clean warped", cleaned_image)
+    # cv2.waitKey(0)
     array_sudoku = []
     
     ROW_SIZE = rows-rows//9
@@ -218,7 +218,6 @@ def zoomCells(warped, dst_points):
     CELL_HEIGHT = cols//9
     
     ZOOM_LEVEL = 9
-    
     for x in range(0, ROW_SIZE+1, CELL_LENGTH):
         riga_sud = []
         X_traslation = -x*ZOOM_LEVEL
@@ -227,17 +226,16 @@ def zoomCells(warped, dst_points):
             Y_traslation = -y*ZOOM_LEVEL
             M = np.float32([[ZOOM_LEVEL, 0, Y_traslation], [0, ZOOM_LEVEL, X_traslation]])
             dst_image = cv2.warpAffine(cleaned_image, M, (cols, rows))
-            cv2.imshow("dst", dst_image)
-            cv2.waitKey(0)
+            # cv2.imshow("dst", dst_image)
+            # cv2.waitKey(0)
             filtered_image = filters_applier(dst_image)
-            
             #cleaned_image = cell_cleaner(filtered_image)
-            cv2.imshow("filtered_image", filtered_image)
-            cv2.waitKey(0)
+            # cv2.imshow("filtered_image", filtered_image)
+            # cv2.waitKey(0)
             predict = digits_rec(filtered_image)
             riga_sud.append(predict)
         array_sudoku.append(riga_sud)
-    print(array_sudoku)
+    return array_sudoku
 
 def digits_rec(image_path):
     MODEL_IMAGE_SIZE = (28,28)
@@ -259,11 +257,39 @@ def digits_rec(image_path):
 device = choose_device()
 image_path = select_file(IMAGE_PATH)
 
-model = OurCNN()
+model = OurCNN().to(device)
 model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device)))
 model.eval()
 
 grid = Grid(GRID_PATH)
 
 dst_points_drawer(grid.warped, grid.dstPoints)
-zoomCells(grid.warped, grid.dstPoints)
+
+def print_sudoku():
+    void_grid = cv2.imread("C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\void_grid.png")
+    sudoku = zoomCells(grid.warped, grid.dstPoints)
+    
+    board = np.array(sudoku)
+     
+    if solve_sudoku(board):
+        current_point = [5,5]
+        for riga in range(9):
+            for numero in range(9): 
+                text_point = (current_point[0] + 7, current_point[1] + 30) 
+                if sudoku[riga][numero]==board[riga][numero]:
+                    #printa nero
+                    
+                    cv2.putText(void_grid, str(board[riga][numero]), text_point, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    
+                else:
+                    #printa verde
+                    cv2.putText(void_grid, str(board[riga][numero]), text_point, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                current_point[0] += 39
+            current_point[1] += 39
+            current_point[0] = 5
+    else:
+        print("Nessuna soluzione trovata.")      
+    cv2.imshow("griglia temp", void_grid)
+    cv2.waitKey(0)
+    return void_grid
+print_sudoku()

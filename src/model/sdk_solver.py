@@ -71,14 +71,14 @@ data_str = """
 data_list = [list(map(int, row.split())) for row in data_str.strip().split('\n')]
 
 # Converte la lista di liste in un array NumPy
-board = np.array(data_list)
-print("Griglia iniziale:")
-print_board(board)
-if solve_sudoku(board):
-    print("\nGriglia risolta:")
-    print_board(board)
-else:
-    print("Nessuna soluzione trovata.")
+# board = np.array(data_list)
+# print("Griglia iniziale:")
+# print_board(board)
+# if solve_sudoku(board):
+#     print("\nGriglia risolta:")
+#     print_board(board)
+# else:
+#     print("Nessuna soluzione trovata.")
 
 '''
 is_valid(board, row, col, num): Questa funzione controlla se un numero (num) può essere inserito in una 
