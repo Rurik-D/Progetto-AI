@@ -265,31 +265,69 @@ grid = Grid(GRID_PATH)
 
 dst_points_drawer(grid.warped, grid.dstPoints)
 
-def print_sudoku():
-    void_grid = cv2.imread("C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\void_grid.png")
-    sudoku = zoomCells(grid.warped, grid.dstPoints)
+def draw_canvas():
+    SUDOKU_SIZE = 720
+    canvas = np.zeros((SUDOKU_SIZE, SUDOKU_SIZE, 3), dtype='uint8')
+    white_canvas = cv2.bitwise_not(canvas)
+    return white_canvas
+
+def draw_empty_grid(partial_grid, grid_frames=1, margin=5):
+    SUDOKU_SIZE = 720
+    BLACK = (0, 0, 0)
+    CELLS_PER_SIDE = 9
+    if grid_frames>CELLS_PER_SIDE:
+        empty_grid = partial_grid
+        return empty_grid
+    else:
+        cell_size=SUDOKU_SIZE//grid_frames
+        for row in range(0, SUDOKU_SIZE+1, cell_size):
+            for col in range(cell_size, SUDOKU_SIZE+1, cell_size):
+                row_coordinates = (row, row)
+                col_coordinates = (col, col)
+                cv2.rectangle(partial_grid, row_coordinates, col_coordinates, BLACK, margin)
+        return draw_empty_grid(partial_grid, grid_frames*3, margin//2)
+
+def color_selector(preset_digit):
+    GREEN = (0, 255, 0)
+    BLACK = (0, 0, 0)
+    EMPTY_CELL = int(0)
+    if preset_digit == EMPTY_CELL:
+        return BLACK
+    else:
+        return GREEN
+
+def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
+
+    START_OFFSET = 4
+    CELLS_BY_SIDE = 9
+    HOR_OFFSET = 16
+    VER_OFFSET = 62
+    CELLS_DISTANCE = 80
     
-    board = np.array(sudoku)
-     
-    if solve_sudoku(board):
-        current_point = [5,5]
-        for riga in range(9):
-            for numero in range(9): 
-                text_point = (current_point[0] + 7, current_point[1] + 30) 
-                if sudoku[riga][numero]==board[riga][numero]:
-                    #printa nero
-                    
-                    cv2.putText(void_grid, str(board[riga][numero]), text_point, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-                    
-                else:
-                    #printa verde
-                    cv2.putText(void_grid, str(board[riga][numero]), text_point, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-                current_point[0] += 39
-            current_point[1] += 39
-            current_point[0] = 5
+    current_point = [START_OFFSET, START_OFFSET]
+    for row in range(CELLS_BY_SIDE):
+        for number in range(CELLS_BY_SIDE):
+            preset_digit = unsolved_sudoku[row][number]
+            solution_digit = str(solved_sudoku[row][number])
+            text_point = current_point[0] + HOR_OFFSET, current_point[1] + VER_OFFSET
+            cv2.putText(empty_grid, solution_digit, text_point, cv2.FONT_HERSHEY_SIMPLEX,
+                    2, color_selector(preset_digit), 3)
+            current_point[0] += CELLS_DISTANCE
+        current_point[1] += CELLS_DISTANCE
+        current_point[0] = START_OFFSET
+
+def print_sudoku():
+    empty_grid = draw_empty_grid(draw_canvas())
+    sudoku = zoomCells(grid.warped, grid.dstPoints)
+    unsolved_sudoku = np.array(sudoku)
+    solved_sudoku = unsolved_sudoku.copy()
+    if solve_sudoku(solved_sudoku):
+        fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
     else:
         print("Nessuna soluzione trovata.")      
-    cv2.imshow("griglia temp", void_grid)
+    cv2.imshow("Solution", empty_grid)
     cv2.waitKey(0)
-    return void_grid
+    filled_grid = empty_grid
+    return filled_grid
+
 print_sudoku()
