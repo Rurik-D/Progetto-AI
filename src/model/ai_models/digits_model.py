@@ -1,26 +1,14 @@
 import cv2
 import numpy as np
-import os
+from os import path
 import pandas as pd
 import pickle
-
-from tkinter import filedialog
-
 from sklearn.model_selection import train_test_split
-
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 import torchmetrics
 
-
-
-def select_file(filepath=None):
-    if filepath != None:
-        return filepath
-    else:
-        filepath = filedialog.askopenfilename(title="Select the dataset file")
-        return filepath
 
 
 def read_csv(csv_file):
@@ -38,8 +26,8 @@ def load_dataset1(dataset_path):
 
 def load_dataset2(df):
     def rinomina_dati(x):
-        path_images = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\empty_data"
-        x = os.path.join(path_images, x)
+        path_images = path.abspath(".") + f"\\dataset\\Printed digits\\empty_data"
+        x = path.join(path_images, x)
         x = cv2.imread(x, 0)
         x = np.array(x, dtype="uint8")
         return x
@@ -57,8 +45,8 @@ def load_dataset2(df):
 
 def load_dataset3(df):
     def rinomina_dati(x):
-        path_images = "C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\CPD_Dataset"
-        x = os.path.join(path_images, x)
+        path_images = path.abspath(".") + f"\\dataset\\CPD_Dataset"
+        x = path.join(path_images, x)
         x = cv2.imread(x, 0)
         x = cv2.bitwise_not(x)
         x = np.array(x, dtype="uint8")
@@ -88,7 +76,7 @@ def choose_device(feedback=False):
 
 
 
-class QMNISTDataset(Dataset):
+class OurDataset(Dataset):
     def __init__(self, data, labels):
         self.images = data
         self.labels = labels
@@ -113,18 +101,12 @@ class QMNISTDataset(Dataset):
         
         return torch.tensor(image), torch.tensor(label)
     
-    
-    '''
-    Returns the set of possible classes in labels.
-    '''
-    def get_classes(self):
-        return set(int(label.item()) for label in train_dataset.labels)
-    
     '''
     Returns the number of possible classes in labels.
     '''
     def get_num_classes(self):
-        return len(self.get_classes())
+        NUM_CLASSES = 10
+        return NUM_CLASSES
 
 
 '''
@@ -191,7 +173,7 @@ class OurCNN(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.5),
             
-            nn.Linear(128, train_dataset.get_num_classes())
+            nn.Linear(128, 10)
         )
 
     def forward(self, x):
@@ -199,6 +181,12 @@ class OurCNN(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.mlp(x)
         return x
+    
+# Defining the device
+device = choose_device()
+# Defining the model
+model = OurCNN().to(device)
+
 
 '''
 It displays a rich report about the training process.
@@ -208,7 +196,7 @@ position in batch, the result of the loss function and an estimate
 of the reached accuracy.
 
 '''
-def display_train_process(batch, loss, X, y, pred, size, update_freq=4):
+def display_train_process(batch, loss, X, y, pred, size, metric, update_freq=4):
     metric.update(pred, y)
     
     if batch % update_freq == 0:
@@ -231,7 +219,7 @@ Then it calculates the loss function and uses it to apply a backpropagation
 of gradient. In the end, it updates the weights of gradient through
 the optimizer. Before computing the next epoch, it resets the gradients.
 '''
-def train_loop(dataloader,model,loss_fn,optimizer):
+def train_loop(dataloader,model,loss_fn,optimizer, metric,train_loader):
     size = len(train_loader.dataset)
     
     model.train()
@@ -252,7 +240,7 @@ def train_loop(dataloader,model,loss_fn,optimizer):
         optimizer.step()
         optimizer.zero_grad()
          
-        display_train_process(batch, loss, X, y, pred, size)
+        display_train_process(batch, loss, X, y, pred, size, metric)
 
     accuracy = metric.compute()
     accuracy_perc = round(float(accuracy)*100, 2)
@@ -268,7 +256,7 @@ The test loop extracts the feature X and the labels y from the batch
 and modifies their dimensions to adapt them to the model.
 Then it computes the prediction on model.
 '''
-def test_loop(dataloader, model):
+def test_loop(dataloader, model, metric):
     model.eval()
     metric.reset()
 
@@ -299,63 +287,61 @@ It saves the weights of the computed PyTorch model in a specified file.
 If "feedback" is set on True, it also displays a confirmation of the saving.
 '''
 def save_model(feedback=False):
-    torch.save(model.state_dict(),"printed_digits_rec.pth") # MOFICARE NOME FILE .PTH
+    torch.save(model.state_dict(),"modello-03-10-2024.pth") # MOFICARE NOME FILE .PTH
     
     if feedback:
         print("Model saved")
 
 
 
+
 # Loading QMNIST Dataset
 #data1 = load_dataset1(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Handwritten digits\\MNIST-120k'))
-data2 = load_dataset2(read_csv(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\Printed digits\\empty_img.csv')))
-data3 = load_dataset3(read_csv(select_file('C:\\Users\\giuse\\Desktop\\Progetto-AI\\dataset\\CPD_labels.csv')))
+def test_labels_data():
+    data2 = load_dataset2(read_csv(path.abspath(".") + f"\\dataset\\Printed digits\\empty_img.csv"))
+    data3 = load_dataset3(read_csv(path.abspath(".") + f"\\dataset\\CPD_labels.csv"))
 
-concat_data = {}
-concat_data['data'] = np.concatenate((data2['data'],data3['data']),axis = 0)
-concat_data['labels'] = np.concatenate((data2['labels'],data3['labels']),axis = 0)
+    concat_data = {}
+    concat_data['data'] = np.concatenate((data2['data'],data3['data']),axis = 0)
+    concat_data['labels'] = np.concatenate((data2['labels'],data3['labels']),axis = 0)
 
-# Splitting dataset for train and test
-train_data, test_data, train_labels, test_labels = train_test_split(concat_data['data'],
-                                                                    concat_data['labels'],
-                                                                    test_size=0.2,
-                                                                    random_state=42)
-
+    # Splitting dataset for train and test
+    train_data, test_data, train_labels, test_labels = train_test_split(concat_data['data'],
+                                                                        concat_data['labels'],
+                                                                        test_size=0.2,
+                                                                        random_state=42)
+    return train_data, test_data, train_labels, test_labels
 # Loading customed QMNIST dataset
-train_dataset = QMNISTDataset(train_data,train_labels)
-test_dataset = QMNISTDataset(test_data,test_labels)
 
-# Defining hyperparameters
-EPOCHS = 15
-BATCH_SIZE = 1000
-LEARNING_RATE = 0.0001
+def generate_model(train_data, test_data, train_labels, test_labels):
+    train_dataset = OurDataset(train_data,train_labels)
+    test_dataset = OurDataset(test_data,test_labels)
 
-# Defining the device
-device = choose_device()
+    # Defining hyperparameters
+    EPOCHS = 15
+    BATCH_SIZE = 1000
+    LEARNING_RATE = 0.0001
 
-# Creating data loaders
-train_loader, test_loader = create_dataloader(train_dataset,
-                                              test_dataset,
-                                              BATCH_SIZE)
+    # Creating data loaders
+    train_loader, test_loader = create_dataloader(train_dataset,
+                                                test_dataset,
+                                                BATCH_SIZE)
 
-# Defining the model
-model = OurCNN().to(device)
+    # Defining loss function
+    loss_fn = nn.CrossEntropyLoss()
 
-# Defining loss function
-loss_fn = nn.CrossEntropyLoss()
+    # Defining optimizer
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
 
-# Defining optimizer
-optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
+    # Defining accuracy metrics
+    metric = torchmetrics.Accuracy(task='multiclass',
+                                num_classes=train_dataset.get_num_classes()).to(device)
 
-# Defining accuracy metrics
-metric = torchmetrics.Accuracy(task='multiclass',
-                               num_classes=train_dataset.get_num_classes()).to(device)
+    # Defining training and test loops
+    for epoch in range(EPOCHS):
+        print("Epoch:", epoch+1)
+        train_loop(train_loader, model, loss_fn, optimizer, metric, train_loader)
+        test_loop(test_loader, model, metric)
 
-# Defining training and test loops
-for epoch in range(EPOCHS):
-    print("Epoch:", epoch+1)
-    train_loop(train_loader, model, loss_fn, optimizer)
-    test_loop(test_loader, model)
-
-# Saving model
-save_model()
+    # Saving model
+    save_model()

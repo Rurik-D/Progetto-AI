@@ -1,24 +1,17 @@
-from grid import Grid
 from sdk_solver import *
-from tkinter import filedialog
+#from ai_models.digits_model import OurCNN
 
 import cv2
 import numpy as np
-
+from os import path
 import torch
 from torch import nn
 from torchvision import transforms
 
-DATABASE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\src\\model\\ai_models\\digits_rec(v2).pth'
-IMAGE_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_53_9638115.jpeg'
-GRID_PATH = 'C:\\Users\\giuse\\Desktop\\Progetto-AI\\Images\\Sudoku\\_53_9638115.jpeg'
 
-def select_file(filepath=None):
-    if filepath != None:
-        return filepath
-    else:
-        filepath = filedialog.askopenfilename(title="Select the dataset file")
-        return filepath
+#IMAGE_PATH = path.abspath(".") + f"\\Images\\Sudoku\\_53_9638115.jpeg"
+#GRID_PATH = path.abspath(".") + f"\\Images\\Sudoku\\_53_9638115.jpeg"
+DATABASE_PATH = path.abspath(".") + f"\\src\\model\\ai_models\\digits_rec(v2).pth"
 
 def choose_device(feedback=False):
     device = ("cuda" if torch.cuda.is_available()
@@ -30,6 +23,8 @@ def choose_device(feedback=False):
         print("Device in use:", device)
     
     return device
+    
+
 
 class OurCNN(nn.Module):
     def __init__(self):
@@ -70,14 +65,11 @@ class OurCNN(nn.Module):
         x = self.mlp(x)
         return x
 
-def dst_points_drawer(warped, dstPoints):
-    for point in dstPoints.tolist():
-        X = int(point[0])
-        Y = int(point[1])
-        coordinates = (X, Y)
-        DOT_SIZE = 5
-        GREEN = (0, 255, 0)
-        cv2.circle(warped, coordinates, DOT_SIZE, GREEN, -1)
+device = choose_device()
+model = OurCNN().to(device)
+model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device), weights_only=False))
+model.eval()
+
 
 def BGR2GRAY_selective(image):
     if len(image.shape) == 3 and image.shape[2] == 3:
@@ -99,60 +91,6 @@ def filters_applier(raw_image):
     thrs_image = cv2.threshold(equalized_image, 90, 255, cv2.THRESH_BINARY)
     preprocessed_image = cv2.bitwise_not(thrs_image[1])
     return preprocessed_image
-
-def cell_cleaner(img):
-    rows = np.shape(img)[0]
-    for i in range(rows):
-        #Floodfilling the outermost layer
-        cv2.floodFill(img, None, (0, i), 0)
-        cv2.floodFill(img, None, (i, 0), 0)
-        cv2.floodFill(img, None, (rows-1, i), 0)
-        cv2.floodFill(img, None, (i, rows-1), 0)
-        #Floodfilling the second outermost layer
-        cv2.floodFill(img, None, (1, i), 1)
-        cv2.floodFill(img, None, (i, 1), 1)
-        cv2.floodFill(img, None, (rows - 2, i), 1)
-        cv2.floodFill(img, None, (i, rows - 2), 1)
-    
-    #Finding the bounding box of the number in the cell
-    rowtop = None
-    
-    rowbottom = None
-    colleft = None
-    colright = None
-    thresholdBottom = 50
-    thresholdTop = 50
-    thresholdLeft = 50
-    thresholdRight = 50
-    center = rows // 2
-    for i in range(center, rows):
-        if rowbottom is None:
-            temp = img[i]
-            if sum(temp) < thresholdBottom or i == rows-1:
-                rowbottom = i
-        if rowtop is None:
-            temp = img[rows-i-1]
-            if sum(temp) < thresholdTop or i == rows-1:
-                rowtop = rows-i-1
-        if colright is None:
-            temp = img[:, i]
-            if sum(temp) < thresholdRight or i == rows-1:
-                colright = i
-        if colleft is None:
-            temp = img[:, rows-i-1]
-            if sum(temp) < thresholdLeft or i == rows-1:
-                colleft = rows-i-1
-
-    # Centering the bounding box's contents
-    newimg = np.zeros(np.shape(img))
-    
-    startatX = (rows + colleft - colright)//2
-    startatY = (rows - rowbottom + rowtop)//2
-    for y in range(startatY, (rows + rowbottom - rowtop)//2):
-        for x in range(startatX, (rows - colleft + colright)//2):
-            newimg[y, x] = img[rowtop + y - startatY, colleft + x - startatX]
-    return np.float32(newimg)
-
 
 def clean_board(warped):
     rows, cols = warped.shape[:2]
@@ -203,7 +141,7 @@ def clean_board(warped):
     return final_result
 
 
-def zoomCells(warped, dst_points):
+def zoomCells(warped):
     # cv2.imshow("wp", warped)
     # cv2.waitKey(0)
     rows, cols = warped.shape[:2]
@@ -229,7 +167,6 @@ def zoomCells(warped, dst_points):
             # cv2.imshow("dst", dst_image)
             # cv2.waitKey(0)
             filtered_image = filters_applier(dst_image)
-            #cleaned_image = cell_cleaner(filtered_image)
             # cv2.imshow("filtered_image", filtered_image)
             # cv2.waitKey(0)
             predict = digits_rec(filtered_image)
@@ -254,16 +191,6 @@ def digits_rec(image_path):
     _, predicted = torch.max(outputs, 1)
     return predicted.item()
 
-device = choose_device()
-image_path = select_file(IMAGE_PATH)
-
-model = OurCNN().to(device)
-model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device), weights_only=False))
-model.eval()
-
-grid = Grid(GRID_PATH)
-
-dst_points_drawer(grid.warped, grid.dstPoints)
 
 def draw_canvas():
     SUDOKU_SIZE = 720
@@ -288,13 +215,13 @@ def draw_empty_grid(partial_grid, grid_frames=1, margin=5):
         return draw_empty_grid(partial_grid, grid_frames*3, margin//2)
 
 def color_selector(preset_digit):
-    GREEN = (0, 255, 0)
+    GREEN = (12, 92, 13)
     BLACK = (0, 0, 0)
     EMPTY_CELL = int(0)
     if preset_digit == EMPTY_CELL:
-        return BLACK
-    else:
         return GREEN
+    else:
+        return BLACK
 
 def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
 
@@ -316,18 +243,20 @@ def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
         current_point[1] += CELLS_DISTANCE
         current_point[0] = START_OFFSET
 
-def print_sudoku():
+
+def get_solved_sudoku(grid):
     empty_grid = draw_empty_grid(draw_canvas())
-    sudoku = zoomCells(grid.warped, grid.dstPoints)
+    sudoku = zoomCells(grid.warped)
+    print(sudoku)
     unsolved_sudoku = np.array(sudoku)
     solved_sudoku = unsolved_sudoku.copy()
     if solve_sudoku(solved_sudoku):
         fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
     else:
         print("Nessuna soluzione trovata.")      
-    cv2.imshow("Solution", empty_grid)
-    cv2.waitKey(0)
+    #cv2.imshow("Solution", empty_grid)
+    #cv2.waitKey(0)
     filled_grid = empty_grid
     return filled_grid
 
-print_sudoku()
+

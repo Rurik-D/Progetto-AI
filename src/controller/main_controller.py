@@ -7,6 +7,8 @@ from model.grid import Grid
 from view.widgets import Widgets
 from view.scanner_effect import ScannerEffect
 from view.window import Window
+from model import digits
+from time import sleep
 
 
 class MainController:
@@ -19,6 +21,7 @@ class MainController:
         self.wdgt = Widgets(root)
         self.scanEffect = ScannerEffect()
         self.lang = Language()
+        self.selectedGrid = None
         
         self.setButtonsCommand()
         self.updateBtnLang()
@@ -37,15 +40,14 @@ class MainController:
         self.wdgt.load_btn.configure(command=self.openChooseImageWindow)
         self.wdgt.back_btn.configure(command=self.switchToMainMenu)
         # Solve menu
-        self.wdgt.solve_btn.configure(command=self.scanEffect.scanning_switch)
+        self.wdgt.solve_btn.configure(command=self.solveSudoku)
         self.wdgt.change_btn.configure(command=self.openChooseImageWindow)
         self.wdgt.mainM_btn.configure(command=self.switchToMainMenu)
         # Settings menu
         self.wdgt.lang_btn.configure(command=self.swapLanguage)
         # Theme switch
         self.wdgt.theme_switch.configure(command=self.wndMan.switchTheme)
-
-        
+ 
     def switchToMainMenu(self):
         """
             Hides all the buttons and labels, showing only the widgets on the main
@@ -62,7 +64,6 @@ class MainController:
         self.wdgt.credits_lbl.place(relx=0.5, rely=0.97, anchor=ctk.CENTER)
         self.wdgt.theme_lbl.place(relx=0.96, rely=0.06, anchor=ctk.CENTER)
 
-
     def switchToChooseImageMenu(self):
         """
             Hides all the buttons, showing only the widgets on the choose image
@@ -72,7 +73,6 @@ class MainController:
         self.wdgt.load_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
         self.wdgt.back_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.wdgt.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
-
 
     def switchToSolveMenu(self, imgPath:str):
         """
@@ -88,7 +88,6 @@ class MainController:
         self.wdgt.change_btn.place(relx=0.2, rely=0.5, anchor=ctk.CENTER)
         self.wdgt.mainM_btn.place(relx=0.2, rely=0.65, anchor=ctk.CENTER)
 
-
     def switchToSettingsMenu(self):
         """
             Hides all the buttons, showing only the widgets on the settings
@@ -99,7 +98,6 @@ class MainController:
         self.wdgt.back_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.wdgt.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
 
-
     def openChooseImageWindow(self):
         """
             Open a file-explorer window which allows the user to select the
@@ -109,40 +107,43 @@ class MainController:
         """
         self.scanEffect.scanning_switch(stop=True)
         file_path = filedialog.askopenfilename(title=self.lang.langMap['selectFile'])
-        error = False
+        self.selectedGrid = Grid(file_path)
 
-        # Checks if a file has been selected
-        if file_path:
-            # Checks if the selected file is an image
-            if file_path.split('.')[-1] in ('png', 'jpg', 'jpeg'):
-                grid = Grid(file_path)
-                # Checks if the image is a sudoku
-                if grid.isGrid:
-                    self.switchToSolveMenu(grid.warped)
-                else:
-                    error = True
-            else:
-                error = True
-
-        if error:
+        if self.isSudoku(file_path):
+            self.switchToSolveMenu(self.selectedGrid.warped)
+        else:
             messagebox.showwarning(self.lang.langMap['adv'], self.lang.langMap['selectImg'])
-                
 
-    def updateChoosenImageLabel(self, imgPath:str):
+
+
+    def solveSudoku(self):
         """
-            Converts the path to an image, then sets the chosenImg_lbl with
-            the chosen image.
+        DESCRIZIONE DA SCRIVERE
         """
-        image = cv2_to_pil_image(imgPath)
+        self.scanEffect.start()
+
+        sleep(1)
+
+        print("Emanuele Sparati")
+        solvedSdk = digits.get_solved_sudoku(self.selectedGrid)
+        print("Emanuele Sparàti2")
+
+        image = cv2_to_pil_image(solvedSdk)
 
         tk_img = ctk.CTkImage(light_image=image, dark_image=image, size=(400, 400))
         self.wdgt.chosenImg_lbl = ctk.CTkLabel(self.root, text='', height=415, fg_color="gray", corner_radius=8, image=tk_img)
 
 
+        print("Emanuele Sparàti3")
+        self.scanEffect.stop()
+        
+
+
+
+
     def swapLanguage(self):
         self.lang.swapLanguage()
         self.updateBtnLang()
-
 
     def updateBtnLang(self):
         """
@@ -158,6 +159,19 @@ class MainController:
         self.wdgt.mainM_btn.configure(text=self.lang.langMap['mainMenu'])
         self.wdgt.lang_btn.configure(text=self.lang.langMap['lang'])
 
+    def updateChoosenImageLabel(self, imgPath:str):
+        """
+            Converts the path to an image, then sets the chosenImg_lbl with
+            the chosen image.
+        """
+        image = cv2_to_pil_image(imgPath)
+
+        tk_img = ctk.CTkImage(light_image=image, dark_image=image, size=(400, 400))
+        self.wdgt.chosenImg_lbl = ctk.CTkLabel(self.root, text='', height=415, fg_color="gray", corner_radius=8, image=tk_img)
+
+    def isSudoku(self, file_path:str):
+        return file_path and file_path.split('.')[-1].lower() in ('png', 'jpg', 'jpeg') and self.selectedGrid.isGrid        
+       
 
     def hideAllButtons(self):
         """
@@ -174,7 +188,6 @@ class MainController:
         self.wdgt.lang_btn.place_forget()
         self.wdgt.theme_switch.place_forget()
 
-    
     def hideAllLabels(self):
         """
             Hide all the graphics.

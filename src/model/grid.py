@@ -109,25 +109,6 @@ def sortPoints(pts):
 
     return rect
 
-
-def zoomCells(warped, dst_points):
-    for point in dst_points.tolist():
-        print(type(point))
-        punto = (point[0],point[1])
-        print(punto)
-        cv2.circle(warped, punto, 5, (0, 255, 0), -1)
-    
-    rows, cols = warped.shape[:2]
-
-    for x in range(0, rows-rows//9, rows//9):
-        print(x)
-        for y in range(0, cols-cols//9, cols//9):
-            print(y)
-            M = np.float32([[9, 0, -y*9], [0, 9, -x*9]])
-            dst_image = cv2.warpAffine(warped, M, (cols, rows))
-            cv2.imshow("image", dst_image)
-            cv2.waitKey(0)
-
 def findGridPoints(warped, side):
     gray_warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray_warped, 100, 150, apertureSize=3)
@@ -152,45 +133,4 @@ def findGridPoints(warped, side):
         if 0 <= px < side and 0 <= py < side:
             grid_points.append((int(px), int(py)))
     return grid_points
-
-
-
-# cv2.namedWindow('Sudoku Grid Points', cv2.WINDOW_NORMAL)
-# cv2.imshow('Sudoku Grid Points', getGrid('C:\\Users\\giuse\\Desktop\\Progetto-AI\\aug\\_288_6294564.jpeg')[0])
-# cv2.waitKey(0)
-# cv2.destroyAllWindows()
-
-
-# # Trova le linee orizzontali e verticali
-# gray_warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-# edges = cv2.Canny(gray_warped, 50, 150, apertureSize=3)
-
-# lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=100, maxLineGap=10)
-
-# # Trova i punti di intersezione delle linee
-# points = []
-# for line1 in lines:
-#     for line2 in lines:
-#         x1, y1, x2, y2 = line1[0]
-#         x3, y3, x4, y4 = line2[0]
-#         denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-#         if denom != 0:
-#             px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / denom
-#             py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / denom
-#             points.append((px, py))
-
-# # Filtra i punti per ottenere solo i punti di intersezione della griglia
-# grid_points = []
-# for px, py in points:
-#     if 0 <= px < side and 0 <= py < side:
-#         grid_points.append((int(px), int(py)))
-# # print(((int(approx[1][0][0])),int((approx[1][0][1]))))
-# # print(grid_points[0])
-# # Visualizza i punti di intersezione
-# print(dst_points)
-# for point in src_points:
-#     print(type(point))
-#     punto = ((int(point[0][0])),(int(point[0][1])))
-#     print(punto)
-#     cv2.circle(warped, punto, 5, (0, 255, 0), -1)
 

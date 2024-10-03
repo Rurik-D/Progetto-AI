@@ -3,6 +3,9 @@ from PIL import Image
 from os import path
 
 
+IMAGES_PATH = path.abspath(".") + "\\src\\resources\\images\\"
+
+
 class Widgets:
     def __init__(self, root):
         corner = 15
@@ -30,12 +33,12 @@ class Widgets:
         self.theme_switch = ctk.CTkSwitch(root, text="", height=20, width=30)
 
 
-        titleImg = ctk.CTkImage(light_image=Image.open(path.abspath(".") + "\\src\\resources\\images\\title_light-no_bg.png"),
-                                dark_image=Image.open(path.abspath(".") + "\\src\\resources\\images\\title_dark-no_bg.png"),
+        titleImg = ctk.CTkImage(light_image=Image.open(IMAGES_PATH + "title_light-no_bg.png"),
+                                dark_image=Image.open(IMAGES_PATH + "title_dark-no_bg.png"),
                                 size=(500, 100))
 
-        themeImg = ctk.CTkImage(light_image=Image.open(path.abspath(".") + "\\src\\resources\\images\\light.png"),
-                                dark_image=Image.open(path.abspath(".") + "\\src\\resources\\images\\moon.png"),
+        themeImg = ctk.CTkImage(light_image=Image.open(IMAGES_PATH + "light.png"),
+                                dark_image=Image.open(IMAGES_PATH + "moon.png"),
                                 size=(30, 30))
         
         self.title_lbl = ctk.CTkLabel(root, text='', image=titleImg)

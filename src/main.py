@@ -1,7 +1,16 @@
+import sys
+from os import path
+
+sys.path.append((path.abspath(".") + "\\src\\model"))
+
+print(path.abspath(".") + "\\src\\model")
+
+
 from tkinter import *
 import customtkinter as ctk
 from controller.main_controller import MainController
 from os import _exit
+
 
 
 class Main:

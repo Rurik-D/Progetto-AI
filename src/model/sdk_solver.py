@@ -1,4 +1,3 @@
-import numpy as np
 
 def is_valid(board, row, col, num):
     # Controlla se 'num' è già nella stessa riga
@@ -40,45 +39,7 @@ def find_empty(board):
                 return (i, j)  # Ritorna la posizione vuota
     return None
 
-def print_board(board):
-    for i in range(9):
-        if i % 3 == 0 and i != 0:
-            print("- - - - - - - - - - - -")
-        
-        for j in range(9):
-            if j % 3 == 0 and j != 0:
-                print(" | ", end="")
-            
-            if j == 8:
-                print(board[i, j])
-            else:
-                print(f"{board[i, j]} ", end="")
 
-# Esempio di una griglia di Sudoku
-data_str = """
-9 2 7 0 0 0 6 0 4
-0 8 3 6 0 7 9 2 0
-0 5 6 0 0 0 0 7 0
-0 0 0 3 2 8 0 0 0
-2 0 0 0 6 0 0 0 3
-3 0 0 4 7 5 0 0 0
-0 1 9 0 0 0 0 6 0
-6 3 2 7 0 9 1 4 0
-7 0 0 0 0 6 0 0 9
-"""
-
-# Converti la stringa in una lista di liste
-data_list = [list(map(int, row.split())) for row in data_str.strip().split('\n')]
-
-# Converte la lista di liste in un array NumPy
-# board = np.array(data_list)
-# print("Griglia iniziale:")
-# print_board(board)
-# if solve_sudoku(board):
-#     print("\nGriglia risolta:")
-#     print_board(board)
-# else:
-#     print("Nessuna soluzione trovata.")
 
 '''
 is_valid(board, row, col, num): Questa funzione controlla se un numero (num) può essere inserito in una 
