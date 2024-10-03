@@ -258,7 +258,7 @@ device = choose_device()
 image_path = select_file(IMAGE_PATH)
 
 model = OurCNN().to(device)
-model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device)))
+model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device), weights_only=False))
 model.eval()
 
 grid = Grid(GRID_PATH)
@@ -299,14 +299,14 @@ def color_selector(preset_digit):
 def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
 
     START_OFFSET = 4
-    CELLS_BY_SIDE = 9
+    CELLS_PER_SIDE = 9
     HOR_OFFSET = 16
     VER_OFFSET = 62
     CELLS_DISTANCE = 80
     
     current_point = [START_OFFSET, START_OFFSET]
-    for row in range(CELLS_BY_SIDE):
-        for number in range(CELLS_BY_SIDE):
+    for row in range(CELLS_PER_SIDE):
+        for number in range(CELLS_PER_SIDE):
             preset_digit = unsolved_sudoku[row][number]
             solution_digit = str(solved_sudoku[row][number])
             text_point = current_point[0] + HOR_OFFSET, current_point[1] + VER_OFFSET
