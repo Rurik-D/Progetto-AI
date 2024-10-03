@@ -9,6 +9,7 @@ class Grid:
             prospettic transformation.
         """
         self.rawImage = cv2.imread(imgPath)
+        self.resizedImage = self.applySelectiveResize()
         self.filteredImage = self.applyFilters()
         self.approx = self.approxContours()
         self.srcPoints = None
@@ -21,6 +22,17 @@ class Grid:
             self.isGrid = True
             self.gridPoints = findGridPoints(self.warped, self.side)
 
+    def applySelectiveResize(self):
+        SIZE_LIMIT = 800
+        height, width = self.rawImage.shape[:2]
+        larger_side = max(height, width)
+        if larger_side>SIZE_LIMIT:
+            scale_factor = SIZE_LIMIT/larger_side
+            resized_img = cv2.resize(self.rawImage, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_AREA)
+            return resized_img
+        else:
+            return self.rawImage
+    
     def applyFilters(self):
         """
             Applies following filters:
@@ -29,7 +41,7 @@ class Grid:
                 - adaptive thresholding (get a binary image)
                 - reverses the image
         """
-        gray = cv2.cvtColor(self.rawImage, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(self.resizedImage, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         medianBlur = cv2.medianBlur(blurred,5)
         th = cv2.adaptiveThreshold(medianBlur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
@@ -77,7 +89,7 @@ class Grid:
                     [0, side - 1] ], dtype="float32")
 
         M = cv2.getPerspectiveTransform(self.srcPoints, self.dstPoints)
-        warped = cv2.warpPerspective(self.rawImage, M, (int(side), int(side)))
+        warped = cv2.warpPerspective(self.resizedImage, M, (int(side), int(side)))
 
         return warped, side
 
