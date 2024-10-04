@@ -85,12 +85,13 @@ def clahe_equalizer(image):
 
 def filters_applier(raw_image):
     IMAGE_DEFAULT_SIZE = (200, 200)
-    resized_image = cv2.resize(raw_image, IMAGE_DEFAULT_SIZE, interpolation=cv2.INTER_LINEAR)
     gray_image = BGR2GRAY_selective(resized_image)
     equalized_image = clahe_equalizer(gray_image)
     thrs_image = cv2.threshold(equalized_image, 90, 255, cv2.THRESH_BINARY)
     preprocessed_image = cv2.bitwise_not(thrs_image[1])
-    return preprocessed_image
+    preprocessed_image = cv2.dilate(preprocessed_image, np.ones((7, 7), np.uint8), iterations=2)
+    resized_image = cv2.resize(preprocessed_image, IMAGE_DEFAULT_SIZE, interpolation=cv2.INTER_LINEAR)
+    return resized_image
 
 def clean_board(warped):
     rows, cols = warped.shape[:2]
