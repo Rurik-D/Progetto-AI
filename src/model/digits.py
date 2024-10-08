@@ -1,13 +1,12 @@
+from model_trainer.digits_model import OurCNN
 from sdk_solver import solve_sudoku
-import cv2
+from torchvision import transforms
+from os.path import abspath
 import numpy as np
-from os import path
+import cv2
 import torch
 
-from torchvision import transforms
-from ai_models.digits_model import OurCNN
-
-DATABASE_PATH = path.abspath(".") + f"\\src\\model\\ai_models\\digits_rec(v2).pth"
+DATABASE_PATH = abspath(".") + f"\\src\\model\\model_trainer\\digits_model.pth"
 
 def choose_device(feedback=False):
     device = ("cuda" if torch.cuda.is_available()
@@ -38,10 +37,10 @@ def clahe_equalizer(image):
     image = clahe.apply(image)
     return image
 
-def filter_test(*args):
-    for img in args:
-        cv2.imshow(f"{img}", img)
-        cv2.waitKey(0)
+# def filter_test(*args):                                                          TODO PER IMMAGINI RELAZIONE
+#     for img in args:
+#         cv2.imshow(f"{img}", img)
+#         cv2.waitKey(0)
 
 def filters_applier(raw_image):
     IMAGE_DEFAULT_SIZE = (200, 200)
@@ -80,12 +79,9 @@ def clean_board(warped):
 
     # Combine the horizontal and vertical lines
     grid_lines = cv2.add(detect_horizontal, detect_vertical)
-    ##cv2.imshow("grif_lines", grid_lines)
-    ##cv2.waitKey(0)
+
     # Invert grid lines to create a mask
     mask = cv2.bitwise_not(grid_lines)
-    ##cv2.imshow("mask", mask)
-    ##cv2.waitKey(0)
 
     # Use the mask to remove lines from the original inverted image
     result = cv2.bitwise_and(inverted_image, mask)
@@ -104,12 +100,8 @@ def clean_board(warped):
 
 
 def zoomCells(warped):
-    # cv2.imshow("wp", warped)
-    # cv2.waitKey(0)
     rows, cols = warped.shape[:2]
     cleaned_image = clean_board(warped)
-    #cv2.imshow("clean warped", cleaned_image)
-    #cv2.waitKey(0)
     array_sudoku = []
     
     ROW_SIZE = rows-rows//9
@@ -127,8 +119,6 @@ def zoomCells(warped):
             M = np.float32([[ZOOM_LEVEL, 0, Y_traslation], [0, ZOOM_LEVEL, X_traslation]])
             dst_image = cv2.warpAffine(cleaned_image, M, (cols, rows))
             filtered_image = filters_applier(dst_image)
-            #cv2.imshow("ffgfg", filtered_image)
-            #cv2.waitKey(0)
             predict = digits_rec(filtered_image)
             riga_sud.append(predict)
         array_sudoku.append(riga_sud)
@@ -207,15 +197,13 @@ def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
 def get_solved_sudoku(grid):
     empty_grid = draw_empty_grid(draw_canvas())
     sudoku = zoomCells(grid.warped)
-    print(sudoku)
     unsolved_sudoku = np.array(sudoku)
     solved_sudoku = unsolved_sudoku.copy()
     if solve_sudoku(solved_sudoku):
         fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
     else:
-        print("Nessuna soluzione trovata.")      
-    #cv2.imshow("Solution", empty_grid)
-    #cv2.waitKey(0)
+        print("Nessuna soluzione trovata.")      ## TODO DA SISTEMARE!!!
+
     filled_grid = empty_grid
     return filled_grid
 

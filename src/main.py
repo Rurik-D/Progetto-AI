@@ -1,16 +1,10 @@
-import sys
-from os import path
-
-sys.path.append((path.abspath(".") + "\\src\\model"))
-
-print(path.abspath(".") + "\\src\\model")
-
-
-from tkinter import *
+from sys import path as sysPath
+from os import path, _exit
 import customtkinter as ctk
-from controller.main_controller import MainController
-from os import _exit
 
+sysPath.append((path.abspath(".") + "\\src\\model"))
+
+from controller.main_controller import MainController
 
 
 class Main:
@@ -30,6 +24,6 @@ class Main:
         """
         self.root.destroy()
         _exit(0)
-        
+
 
 Main()

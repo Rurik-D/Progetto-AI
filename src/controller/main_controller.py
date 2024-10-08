@@ -1,17 +1,14 @@
-from tkinter import filedialog
-from tkinter import messagebox
+from tkinter import filedialog, messagebox
 from threading import Thread
-from PIL import Image, ImageTk
-import customtkinter as ctk
+from PIL import Image
 from util.language import Language
 from util.image_converter import cv2_to_pil_image
 from model.grid import Grid
 from view.widgets import Widgets
 from view.scanner_effect import ScannerEffect
 from view.window import Window
-from model import digits
-from time import sleep
-
+from model.digits import get_solved_sudoku
+import customtkinter as ctk
 
 class MainController:
     """
@@ -24,6 +21,8 @@ class MainController:
         self.scanEffect = ScannerEffect()
         self.lang = Language()
         self.selectedGrid = None
+        self.solverThread = None
+
         
         self.setButtonsCommand()
         self.updateBtnLang()
@@ -42,8 +41,8 @@ class MainController:
         self.wdgt.load_btn.configure(command=self.openChooseImageWindow)
         self.wdgt.back_btn.configure(command=self.switchToMainMenu)
         # Solve menu
-        self.wdgt.solve_btn.configure(command=self.solveSudoku)
-        self.wdgt.change_btn.configure(command=self.openChooseImageWindow)
+        self.wdgt.solve_btn.configure(command=self.startSudokuSolving)
+        self.wdgt.change_btn.configure(command=self.changeSudoku)
         self.wdgt.mainM_btn.configure(command=self.switchToMainMenu)
         # Settings menu
         self.wdgt.lang_btn.configure(command=self.swapLanguage)
@@ -100,6 +99,17 @@ class MainController:
         self.wdgt.back_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.wdgt.theme_switch.place(relx=0.92, rely=0.06, anchor=ctk.CENTER)
 
+
+    def changeSudoku(self):
+        """
+        
+        """
+        self.openChooseImageWindow()
+        self.scanEffect.stop()
+        # self.solverThread.stop()
+
+
+
     def openChooseImageWindow(self):
         """
             Open a file-explorer window which allows the user to select the
@@ -118,45 +128,61 @@ class MainController:
 
 
 
-    def solveSudoku(self):
+    def startSudokuSolving(self):
         """
-        DESCRIZIONE DA SCRIVERE
+            Starts sudoku loading and solving effect threads.
         """
+        self.wdgt.solve_btn.configure(state="disabled")
+        self.wdgt.change_btn.configure(state="disabled")
+        self.wdgt.mainM_btn.configure(state="disabled")
+
         self.scanEffect.start()
+        self.solverThread = Thread(target=self.solveAndUpdate)
+        self.solverThread.start()
 
-        solverThread = Thread(target=self.solveAndUpdateSudokuImage)
-        solverThread.start()
+
         
 
-    def solveAndUpdateSudokuImage(self):
-        print("Emanuele Sparati")
-        solvedSdk = digits.get_solved_sudoku(self.selectedGrid)
-        print("Emanuele Sparàti2")
-
-        image = cv2_to_pil_image(solvedSdk)
-
-        image = image.resize((400, 400))
-        image_tk = ImageTk.PhotoImage(image)
-        self.wdgt.chosenImg_lbl.configure(image=image_tk)
-
-
-        # tk_img = ctk.CTkImage(light_image=image, dark_image=image, size=(400, 400))
-        # self.wdgt.chosenImg_lbl = ctk.CTkLabel(self.root, text='', height=415, fg_color="gray", corner_radius=8, image=tk_img)
-
-
-        print("Emanuele Sparàti3")
+    def solveAndUpdate(self):
+        """
+            Solves the sudoku and updates the sudoku label image by blocking 
+            the scanner effect.
+        """
+        solvedSdk = get_solved_sudoku(self.selectedGrid)
+        self.updateSudokuImageLabel(solvedSdk)
         self.scanEffect.stop()
-        
 
+        self.wdgt.solve_btn.configure(state="normal")
+        self.wdgt.change_btn.configure(state="normal")
+        self.wdgt.mainM_btn.configure(state="normal")
+
+        
+    def updateSudokuImageLabel(self, solvedSdk):
+        """
+            Converts the NumPy array of the solved sudoku to a PIL image, creates 
+            a CTkImage object from the PIL image, update the label image and 
+            assign the image to the label to prevent it from being garbage collected.
+        """
+        new_image = Image.fromarray(solvedSdk)
+        new_image = new_image.resize((400, 400))
+
+        new_ctk_image = ctk.CTkImage(light_image=new_image, size=(400, 400))
+
+        self.wdgt.chosenImg_lbl.configure(image=new_ctk_image)
+        self.wdgt.chosenImg_lbl.image = new_ctk_image
 
 
     def swapLanguage(self):
+        """
+        Switch from English to Italian and vice versa.
+        """
         self.lang.swapLanguage()
         self.updateBtnLang()
 
+
     def updateBtnLang(self):
         """
-            Loads the new languange and updates al the buttons's text
+            Loads the new languange and updates al the buttons's text.
         """
         self.wdgt.start_btn.configure(text=self.lang.langMap['start'])
         self.wdgt.settings_btn.configure(text=self.lang.langMap['settings'])
