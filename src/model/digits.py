@@ -1,16 +1,12 @@
-from sdk_solver import *
-#from ai_models.digits_model import OurCNN
-
+from sdk_solver import solve_sudoku
 import cv2
 import numpy as np
 from os import path
 import torch
-from torch import nn
+
 from torchvision import transforms
+from ai_models.digits_model import OurCNN
 
-
-#IMAGE_PATH = path.abspath(".") + f"\\Images\\Sudoku\\_53_9638115.jpeg"
-#GRID_PATH = path.abspath(".") + f"\\Images\\Sudoku\\_53_9638115.jpeg"
 DATABASE_PATH = path.abspath(".") + f"\\src\\model\\ai_models\\digits_rec(v2).pth"
 
 def choose_device(feedback=False):
@@ -24,47 +20,6 @@ def choose_device(feedback=False):
     
     return device
     
-
-
-class OurCNN(nn.Module):
-    def __init__(self):
-        super().__init__()
-        
-        self.cnn = nn.Sequential(
-            nn.Conv2d(1, 32, 3, padding=1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            
-            nn.Conv2d(32, 64, 3, padding=1),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-            
-            nn.Conv2d(64, 128, 3, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2)
-            )
-        
-        self.mlp = nn.Sequential(
-            nn.Linear(128 * 3 * 3, 256),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            
-            nn.Linear(256, 128),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            
-            nn.Linear(128, 10)
-        )
-
-    def forward(self, x):
-        x = self.cnn(x)
-        x = x.view(x.size(0), -1)
-        x = self.mlp(x)
-        return x
-
 device = choose_device()
 model = OurCNN().to(device)
 model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device), weights_only=False))
@@ -83,14 +38,20 @@ def clahe_equalizer(image):
     image = clahe.apply(image)
     return image
 
+def filter_test(*args):
+    for img in args:
+        cv2.imshow(f"{img}", img)
+        cv2.waitKey(0)
+
 def filters_applier(raw_image):
     IMAGE_DEFAULT_SIZE = (200, 200)
-    gray_image = BGR2GRAY_selective(resized_image)
+    gray_image = BGR2GRAY_selective(raw_image)
     equalized_image = clahe_equalizer(gray_image)
     thrs_image = cv2.threshold(equalized_image, 90, 255, cv2.THRESH_BINARY)
     preprocessed_image = cv2.bitwise_not(thrs_image[1])
     preprocessed_image = cv2.dilate(preprocessed_image, np.ones((7, 7), np.uint8), iterations=2)
     resized_image = cv2.resize(preprocessed_image, IMAGE_DEFAULT_SIZE, interpolation=cv2.INTER_LINEAR)
+    #filter_test(raw_image, gray_image, equalized_image, thrs_image[1], preprocessed_image, resized_image)
     return resized_image
 
 def clean_board(warped):
@@ -111,11 +72,11 @@ def clean_board(warped):
 
     # Remove horizontal lines
     horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (CELL_LENGTH-1, 1))
-    detect_horizontal = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
+    detect_horizontal = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, horizontal_kernel, iterations=3)
 
     # Remove vertical lines
     vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, CELL_HEIGHT-1))
-    detect_vertical = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, vertical_kernel, iterations=2)
+    detect_vertical = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, vertical_kernel, iterations=3)
 
     # Combine the horizontal and vertical lines
     grid_lines = cv2.add(detect_horizontal, detect_vertical)
@@ -147,8 +108,8 @@ def zoomCells(warped):
     # cv2.waitKey(0)
     rows, cols = warped.shape[:2]
     cleaned_image = clean_board(warped)
-    # cv2.imshow("clean warped", cleaned_image)
-    # cv2.waitKey(0)
+    #cv2.imshow("clean warped", cleaned_image)
+    #cv2.waitKey(0)
     array_sudoku = []
     
     ROW_SIZE = rows-rows//9
@@ -165,11 +126,9 @@ def zoomCells(warped):
             Y_traslation = -y*ZOOM_LEVEL
             M = np.float32([[ZOOM_LEVEL, 0, Y_traslation], [0, ZOOM_LEVEL, X_traslation]])
             dst_image = cv2.warpAffine(cleaned_image, M, (cols, rows))
-            # cv2.imshow("dst", dst_image)
-            # cv2.waitKey(0)
             filtered_image = filters_applier(dst_image)
-            # cv2.imshow("filtered_image", filtered_image)
-            # cv2.waitKey(0)
+            #cv2.imshow("ffgfg", filtered_image)
+            #cv2.waitKey(0)
             predict = digits_rec(filtered_image)
             riga_sud.append(predict)
         array_sudoku.append(riga_sud)

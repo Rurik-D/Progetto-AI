@@ -1,5 +1,7 @@
 from tkinter import filedialog
 from tkinter import messagebox
+from threading import Thread
+from PIL import Image, ImageTk
 import customtkinter as ctk
 from util.language import Language
 from util.image_converter import cv2_to_pil_image
@@ -122,22 +124,29 @@ class MainController:
         """
         self.scanEffect.start()
 
-        sleep(1)
+        solverThread = Thread(target=self.solveAndUpdateSudokuImage)
+        solverThread.start()
+        
 
+    def solveAndUpdateSudokuImage(self):
         print("Emanuele Sparati")
         solvedSdk = digits.get_solved_sudoku(self.selectedGrid)
         print("Emanuele Sparàti2")
 
         image = cv2_to_pil_image(solvedSdk)
 
-        tk_img = ctk.CTkImage(light_image=image, dark_image=image, size=(400, 400))
-        self.wdgt.chosenImg_lbl = ctk.CTkLabel(self.root, text='', height=415, fg_color="gray", corner_radius=8, image=tk_img)
+        image = image.resize((400, 400))
+        image_tk = ImageTk.PhotoImage(image)
+        self.wdgt.chosenImg_lbl.configure(image=image_tk)
+
+
+        # tk_img = ctk.CTkImage(light_image=image, dark_image=image, size=(400, 400))
+        # self.wdgt.chosenImg_lbl = ctk.CTkLabel(self.root, text='', height=415, fg_color="gray", corner_radius=8, image=tk_img)
 
 
         print("Emanuele Sparàti3")
         self.scanEffect.stop()
         
-
 
 
 
