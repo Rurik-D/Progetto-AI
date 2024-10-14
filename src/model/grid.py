@@ -8,15 +8,20 @@ class Grid:
             detects contours and extracts the grid applying a 
             prospettic transformation.
         """
+        self.rawImage = None
+        self.resizedImage = None
+        self.filteredImage = None
+        self.approx = None
+        self.srcPoints = None
+        self.dstPoints = None
+        self.warped = None
+        self.isGrid = False
+
         try:
             self.rawImage = cv2.imread(imgPath)
             self.resizedImage = self.applySelectiveResize()
             self.filteredImage = self.applyFilters()
             self.approx = self.approxContours()
-            self.srcPoints = None
-            self.dstPoints = None
-            self.warped = None
-            self.isGrid = False
 
             if len(self.approx) == 4: 
                 self.warped, self.side = self.prospTransform()

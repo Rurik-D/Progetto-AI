@@ -202,16 +202,22 @@ def get_solved_sudoku(grid):
         solved_sudoku = unsolved_sudoku.copy()
         if solve_sudoku(solved_sudoku):
             fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
-            check_validity(solved_sudoku)
+            if not is_valid(solved_sudoku):
+                return None
         else:
             return None
     except:
         return None
     filled_grid = empty_grid
-    return filled_grid
+    # return filled_grid
+    return solved_sudoku
 
-def check_validity(solved_sudoku):
-    row = any(np.unique(row).size != row.size for row in solved_sudoku)
-    col = any(np.unique(col).size != col.size for col in solved_sudoku.T)
-    if row == True or col == True: 
-        return None
+def is_valid(solved_sudoku):
+    rowError = any(np.unique(row).size != row.size for row in solved_sudoku)
+    colError = any(np.unique(col).size != col.size for col in solved_sudoku.T)
+    return not rowError and not colError
+
+
+
+
+
