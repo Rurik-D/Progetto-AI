@@ -174,7 +174,7 @@ class MainController:
 
     def swapLanguage(self):
         """
-        Switch from English to Italian and vice versa.
+            Switch from English to Italian and vice versa.
         """
         self.lang.swapLanguage()
         self.updateBtnLang()
