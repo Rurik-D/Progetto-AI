@@ -195,16 +195,23 @@ def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
 
 
 def get_solved_sudoku(grid):
-    empty_grid = draw_empty_grid(draw_canvas())
-    sudoku = zoomCells(grid.warped)
-    unsolved_sudoku = np.array(sudoku)
-    solved_sudoku = unsolved_sudoku.copy()
-    if solve_sudoku(solved_sudoku):
-        fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
-    else:
-        print("Nessuna soluzione trovata.")      ## TODO DA SISTEMARE!!!
-
+    try:
+        empty_grid = draw_empty_grid(draw_canvas())
+        sudoku = zoomCells(grid.warped)
+        unsolved_sudoku = np.array(sudoku)
+        solved_sudoku = unsolved_sudoku.copy()
+        if solve_sudoku(solved_sudoku):
+            fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
+            check_validity(solved_sudoku)
+        else:
+            return None
+    except:
+        return None
     filled_grid = empty_grid
     return filled_grid
 
-
+def check_validity(solved_sudoku):
+    row = any(np.unique(row).size != row.size for row in solved_sudoku)
+    col = any(np.unique(col).size != col.size for col in solved_sudoku.T)
+    if row == True or col == True: 
+        return None
