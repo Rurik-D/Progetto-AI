@@ -5,6 +5,7 @@ from os.path import abspath
 import numpy as np
 import cv2
 import torch
+import time
 
 DATABASE_PATH = abspath(".") + f"\\src\\model\\model_trainer\\digits_model.pth"
 
@@ -200,17 +201,20 @@ def get_solved_sudoku(grid):
         sudoku = zoomCells(grid.warped)
         unsolved_sudoku = np.array(sudoku)
         solved_sudoku = unsolved_sudoku.copy()
-        if solve_sudoku(solved_sudoku):
+        timestamp = time.time()
+
+        if solve_sudoku(solved_sudoku, timestamp):
             fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
             if not is_valid(solved_sudoku):
-                return None
+                return (None, False)
         else:
-            return None
+            return (None, False)
     except:
-        return None
-    filled_grid = empty_grid
-    # return filled_grid
-    return solved_sudoku
+        return (None, False)
+    
+    solved_sudoku = empty_grid
+    
+    return (solved_sudoku, True)
 
 def is_valid(solved_sudoku):
     rowError = any(np.unique(row).size != row.size for row in solved_sudoku)

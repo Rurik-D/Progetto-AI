@@ -6,29 +6,37 @@ import os
 
 def main():
     img_paths = os.listdir('images\\Sudoku')
-    maxLength = len(max(img_paths, key=len))
     notFoundTxt = ""
 
     for path in img_paths:
         path = os.path.abspath('.') + f"\\images\\Sudoku\\{path}"
         grid = Grid(path)
 
+        print(f"Controllo griglia: {path}")
+
         if grid.isGrid:
+            print("Griglia apposto")
+
+            print("Calcolo soluzione...")
             solved = digits.get_solved_sudoku(grid)
+
             if type(solved) != type(None):
+                print("Soluzione presente")
+                print("Controllo correttezza: ")
+                
                 if digits.is_valid(solved):
-                    print(f"\n{path}".ljust(maxLength, ' ') + "\tOK!")
+                    print("OK!\n")
                 else:
-                    notFoundTxt += f"\n{path}".ljust(maxLength, ' ') + "\terr: bs" # Bad Solution
-                    print(f"\n{path}".ljust(maxLength, ' ') + "\terr: bs")
+                    notFoundTxt += "err: bs" # Bad Solution
+                    print("err: bs\n")
             else:
-                notFoundTxt += f"\n{path}".ljust(maxLength, ' ') + "\terr: bdt" #Bad Digits Translation
-                print(f"\n{path}".ljust(maxLength, ' ') + "\terr: bdt")
+                notFoundTxt += "err: bdt" #Bad Digits Translation
+                print("err: bdt\n")
 
         else:
             # Aggiungi al file non trovati
-            notFoundTxt += f"\n{path}".ljust(maxLength, ' ') + "\terr: gnf" # Grid Not Found
-            print(f"\n{path}".ljust(maxLength, ' ') + "\terr: gnf")
+            notFoundTxt += "err: gnf" # Grid Not Found
+            print("err: gnf\n")
 
 
     with open(os.path.abspath('.') + "\\src\\model\\not_found.txt", encoding='utf-8', mode='w') as f:

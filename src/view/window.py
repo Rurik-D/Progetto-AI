@@ -19,9 +19,13 @@ class Window:
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("dark-blue")
 
-        root.geometry("900x550")
+
+        screen_width = root.winfo_screenwidth()  # Larghezza dello schermo
+        screen_height = root.winfo_screenheight()  # Altezza dello schermo
+
+
+        root.geometry(f"1000x650+{(screen_width-1000)//2}+{(screen_height-650)//2}")
         root.maxsize(1100, 650)
-        
         root.minsize(700, 450)
         root.iconbitmap(path.abspath(".") + "\\src\\resources\\images\\sudoku.ico")
         root.title("SolveDoku!")

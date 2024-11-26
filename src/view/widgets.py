@@ -2,12 +2,11 @@ import customtkinter as ctk
 from PIL import Image
 from os import path
 
-
 IMAGES_PATH = path.abspath(".") + "\\src\\resources\\images\\"
-
 
 class Widgets:
     def __init__(self, root):
+        self.root = root
         corner = 15
         W = 150
         H = 50
@@ -46,5 +45,3 @@ class Widgets:
 
         self.credits_lbl= ctk.CTkLabel(root, text="Emanuele D'Agostino\tAlessandro Buccioli\tGiuseppe Borracci")
         self.chosenImg_lbl = ctk.CTkLabel(root, text='', height=415, fg_color="gray", corner_radius=8)
-
-

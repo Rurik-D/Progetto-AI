@@ -1,3 +1,5 @@
+import time
+ 
 
 def is_valid(board, row, col, num):
     # Controlla se 'num' è già nella stessa riga
@@ -15,8 +17,11 @@ def is_valid(board, row, col, num):
     
     return True
 
-def solve_sudoku(board):
+def solve_sudoku(board, timestart):
     empty = find_empty(board)
+    if time.time() - timestart >= 15:
+        return False 
+    
     if empty is None:
         return True  # Sudoku risolto
     row, col = empty
@@ -25,7 +30,7 @@ def solve_sudoku(board):
         if is_valid(board, row, col, num):
             board[row, col] = num
             
-            if solve_sudoku(board):
+            if solve_sudoku(board, timestart):
                 return True
             
             board[row, col] = 0  # Undo la scelta (backtracking)
