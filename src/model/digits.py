@@ -201,10 +201,10 @@ def get_solved_sudoku(grid):
         sudoku = zoomCells(grid.warped)
         unsolved_sudoku = np.array(sudoku)
         solved_sudoku = unsolved_sudoku.copy()
-        timestamp = time.time()
 
-        if solve_sudoku(solved_sudoku, timestamp):
+        if solve_sudoku(solved_sudoku, time.time()):
             fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku)
+            
             if not is_valid(solved_sudoku):
                 return (None, False)
         else:
@@ -212,14 +212,15 @@ def get_solved_sudoku(grid):
     except:
         return (None, False)
     
-    solved_sudoku = empty_grid
-    
+    # solved_sudoku = empty_grid # SCOMMENTARE PER TEST!!!!!!!!!!!!!
     return (solved_sudoku, True)
 
-def is_valid(solved_sudoku):
-    rowError = any(np.unique(row).size != row.size for row in solved_sudoku)
-    colError = any(np.unique(col).size != col.size for col in solved_sudoku.T)
+def is_valid(solved):
+    rowError = any(np.unique(row).size != row.size for row in solved)
+    colError = any(np.unique(col).size != col.size for col in solved.T)
     return not rowError and not colError
+
+
 
 
 

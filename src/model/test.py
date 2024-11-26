@@ -18,12 +18,11 @@ def main():
             print("Griglia apposto")
 
             print("Calcolo soluzione...")
-            solved = digits.get_solved_sudoku(grid)
-
-            if type(solved) != type(None):
+            solved, existsSol = digits.get_solved_sudoku(grid)    
+            if existsSol:
                 print("Soluzione presente")
                 print("Controllo correttezza: ")
-                
+                print(solved)
                 if digits.is_valid(solved):
                     print("OK!\n")
                 else:
