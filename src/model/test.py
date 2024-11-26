@@ -6,7 +6,7 @@ import os
 
 def main():
     img_paths = os.listdir('images\\Sudoku')
-    notFoundTxt = ""
+    workTxt = ""
 
     for path in img_paths:
         path = os.path.abspath('.') + f"\\images\\Sudoku\\{path}"
@@ -23,22 +23,20 @@ def main():
                 print("Soluzione presente")
                 print("Controllo correttezza: ")
                 if digits.is_valid(solved):
+                    workTxt += os.path.abspath('.') + f"\\images\\Sudoku\\{path}\n"
                     print("OK!\n")
                 else:
-                    notFoundTxt += "err: bs" # Bad Solution
                     print("err: bs\n")
             else:
-                notFoundTxt += "err: bdt" #Bad Digits Translation
                 print("err: bdt\n")
 
         else:
             # Aggiungi al file non trovati
-            notFoundTxt += "err: gnf" # Grid Not Found
             print("err: gnf\n")
 
 
     with open(os.path.abspath('.') + "\\src\\model\\not_found.txt", encoding='utf-8', mode='w') as f:
-        f.write(notFoundTxt)
+        f.write(workTxt)
 
 main()
 
