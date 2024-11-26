@@ -22,7 +22,6 @@ def main():
             if existsSol:
                 print("Soluzione presente")
                 print("Controllo correttezza: ")
-                print(solved)
                 if digits.is_valid(solved):
                     print("OK!\n")
                 else:
