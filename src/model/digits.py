@@ -7,6 +7,8 @@ import cv2
 import torch
 import time
 
+# TODO COMMENTARE DIGITS
+
 DATABASE_PATH = abspath(".") + f"\\src\\model\\model_trainer\\digits_model.pth"
 
 def choose_device(feedback=False):

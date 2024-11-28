@@ -19,7 +19,7 @@ def is_valid(board, row, col, num):
 
 def solve_sudoku(board, timestart):
     empty = find_empty(board)
-    if time.time() - timestart >= 15:
+    if time.time() - timestart >= 30:
         return False 
     
     if empty is None:
