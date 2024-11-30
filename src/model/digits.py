@@ -214,7 +214,7 @@ def get_solved_sudoku(grid):
     except:
         return (None, False)
     
-    # solved_sudoku = empty_grid # SCOMMENTARE PER TEST!!!!!!!!!!!!!
+    solved_sudoku = empty_grid #COMMENTARE PER TEST!!!!!!!!!!!!!
     return (solved_sudoku, True)
 
 def is_valid(solved):

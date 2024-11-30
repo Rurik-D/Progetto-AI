@@ -15,15 +15,6 @@ class Main:
     def __init__(self):
         self.root = ctk.CTk()
         self.menuCtrl = MainController(self.root)
-        self.root.protocol("WM_DELETE_WINDOW", self.onClose)
         self.root.mainloop()
-
-    def onClose(self):
-        """
-            Method runned when the window is closed.
-        """
-        self.root.destroy()
-        _exit(0)
-
 
 Main()

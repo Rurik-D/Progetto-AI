@@ -1,7 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
 from os import path
-
 IMAGES_PATH = path.abspath(".") + "\\src\\resources\\images\\"
 
 class Widgets:
@@ -26,8 +25,13 @@ class Widgets:
         self.mainM_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
         
         # Settings menu
-        self.lang_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
+        #self.lang_btn = ctk.CTkButton(root, height=H, width=W, corner_radius=corner)
+        lingue = ["Italian", "English"]
+        lingua_var = ctk.StringVar(value="English")  # Valore predefinito
         
+        # Menù a tendina per selezionare la lingua
+
+        self.lang_btn = ctk.CTkOptionMenu(root, height=H, width=W, variable=lingua_var, values=lingue, corner_radius=corner)
         # Theme switch
         self.theme_switch = ctk.CTkSwitch(root, text="", height=20, width=30)
 

@@ -4,11 +4,15 @@
     "exit" : "Esci",
     "load" : "Carica",
     "back" : "Indietro",
-    "solve" : "Risolvi!",
+    "solve" : "Risolvi",
     "change" : "Cambia",
     "lang" : "Lingua",
-    "mainMenu" : "Menu Pricipale",
+    "mainMenu" : "Menu Principale",
     "selectImg" : "Devi selezionare l'immagine di un sudoku!",
     "adv" : "Consiglio",
-    "selectFile" : "Seleziona un'immagine"
+    "err" : "Errore",
+    "selectFile" : "Seleziona un'immagine",
+    "sudokuError" : "Impossibile risolvere il sudoku!",
+    "conf" : "Conferma",
+    "exitQuestion": "Sicuro di voler uscire?"
 }

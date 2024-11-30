@@ -5,7 +5,6 @@ from util.language import Language
 from util.image_converter import cv2_to_pil_image
 from model.grid import Grid
 from view.widgets import Widgets
-from view.scanner_effect import ScannerEffect
 from view.window import Window
 from model.digits import get_solved_sudoku
 import customtkinter as ctk
@@ -36,7 +35,8 @@ class MainController:
         # Main menu
         self.wdgt.start_btn.configure(command=self.switchToChooseImageMenu)
         self.wdgt.settings_btn.configure(command=self.switchToSettingsMenu)
-        self.wdgt.exit_btn.configure(command=self.root.destroy)
+        self.wdgt.exit_btn.configure(command=self.checkConfirm)
+        self.root.protocol("WM_DELETE_WINDOW", self.checkConfirm)
         # Image load menu
         self.wdgt.load_btn.configure(command=self.openChooseImageWindow)
         self.wdgt.back_btn.configure(command=self.switchToMainMenu)
@@ -48,7 +48,13 @@ class MainController:
         self.wdgt.lang_btn.configure(command=self.swapLanguage)
         # Theme switch
         self.wdgt.theme_switch.configure(command=self.wndMan.switchTheme)
- 
+        
+    
+    def checkConfirm(self):
+        risposta = messagebox.askyesno(self.lang.langMap['conf'], self.lang.langMap['exitQuestion'])
+        if risposta:
+            self.root.destroy()
+            
     def switchToMainMenu(self):
         """
             Hides all the buttons and labels, showing only the widgets on the main
@@ -168,15 +174,15 @@ class MainController:
             # self.scanEffect.stop()
 
         else:
-            self.showError()
+            messagebox.showwarning(self.lang.langMap['err'], self.lang.langMap['sudokuError'])
             self.wdgt.solve_btn.configure(state="normal")
 
         self.wdgt.change_btn.configure(state="normal")
         self.wdgt.mainM_btn.configure(state="normal")
 
 
-    def showError(self):
-        print("\n\tImpossibile risolvere l'immagine!\n")
+        
+
 
         
     def updateSudokuImageLabel(self, solvedSdk):
@@ -195,13 +201,13 @@ class MainController:
 
 
 
-    def swapLanguage(self):
+    def swapLanguage(self, scelta):
         """
             Switch from English to Italian and vice versa.
         """
-        self.lang.swapLanguage()
+        
+        self.lang.swapLanguage(scelta)
         self.updateBtnLang()
-
 
     def updateBtnLang(self):
         """
@@ -215,7 +221,7 @@ class MainController:
         self.wdgt.solve_btn.configure(text=self.lang.langMap['solve'])
         self.wdgt.change_btn.configure(text=self.lang.langMap['change'])
         self.wdgt.mainM_btn.configure(text=self.lang.langMap['mainMenu'])
-        self.wdgt.lang_btn.configure(text=self.lang.langMap['lang'])
+        #self.wdgt.lang_btn.configure(text=self.lang.langMap['lang'])
 
     def updateChoosenImageLabel(self, imgPath:str):
         """

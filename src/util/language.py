@@ -15,7 +15,12 @@ class Language:
     def __getLanguagePath(self):
         return path.abspath(".") + f"\\src\\resources\\json\\lang_{self.curLang}.json"
 
-    def swapLanguage(self):
-        self.curLang = 'en' if self.curLang == 'it' else 'it'
+    def swapLanguage(self, scelta):
+        
+        if scelta == "Italian":
+            self.curLang = 'it'
+        else: 
+            self.curLang = 'en'
+        #self.curLang = 'en' if self.curLang == 'it' else 'it'
         self.__updateLanguageMap()
 
