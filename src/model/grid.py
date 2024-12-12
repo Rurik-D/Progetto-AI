@@ -26,7 +26,6 @@ class Grid:
             if len(self.approx) == 4: 
                 self.warped, self.side = self.prospTransform()
                 self.isGrid = True
-                self.gridPoints = findGridPoints(self.warped, self.side)
             else:
                 return None
         except:
