@@ -118,29 +118,3 @@ def sortPoints(pts):
     rect[3] = pts[np.argmax(diff)]
 
     return rect
-
-def findGridPoints(warped, side):
-    gray_warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray_warped, 100, 150, apertureSize=3)
-
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=100, maxLineGap=10)
-
-    # Trova i punti di intersezione delle linee
-    points = []
-    for line1 in lines:
-        for line2 in lines:
-            x1, y1, x2, y2 = line1[0]
-            x3, y3, x4, y4 = line2[0]
-            denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
-            if denom != 0:
-                px = ((x1*y2 - y1*x2) * (x3 - x4) - (x1 - x2) * (x3*y4 - y3*x4)) / denom
-                py = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / denom
-                points.append((px, py))
-
-    # Filtra i punti per ottenere solo i punti di intersezione della griglia
-    grid_points = []
-    for px, py in points:
-        if 0 <= px < side and 0 <= py < side:
-            grid_points.append((int(px), int(py)))
-    return grid_points
-
