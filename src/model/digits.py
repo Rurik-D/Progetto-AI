@@ -7,8 +7,6 @@ import cv2
 import torch
 import time
 
-# TODO COMMENTARE DIGITS
-
 DATABASE_PATH = abspath(".") + f"\\src\\model\\model_trainer\\digits_model.pth"
 
 def choose_device(feedback=False):
@@ -22,6 +20,7 @@ def choose_device(feedback=False):
     
     return device
     
+    
 device = choose_device()
 model = OurCNN().to(device)
 model.load_state_dict(torch.load(DATABASE_PATH,torch.device(device), weights_only=False))
@@ -29,6 +28,12 @@ model.eval()
 
 
 def BGR2GRAY_selective(image):
+    """
+        Converts a BGR image to grayscale selectively.
+        It performs the conversion only if the input image is 
+        a 3-channel BGR image
+    """
+
     if len(image.shape) == 3 and image.shape[2] == 3:
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     else:
@@ -36,16 +41,17 @@ def BGR2GRAY_selective(image):
     return gray_image
 
 def clahe_equalizer(image):
+    """
+         applies CLAHE to locally set the contrast of an input grayscale image.
+    """
     clahe = cv2.createCLAHE(clipLimit=6.0, tileGridSize=(9,9))
     image = clahe.apply(image)
     return image
 
-# def filter_test(*args):                                                          TODO PER IMMAGINI RELAZIONE
-#     for img in args:
-#         cv2.imshow(f"{img}", img)
-#         cv2.waitKey(0)
-
 def filters_applier(raw_image):
+    """
+        Applies the filter to the raw image.
+    """
     IMAGE_DEFAULT_SIZE = (200, 200)
     gray_image = BGR2GRAY_selective(raw_image)
     equalized_image = clahe_equalizer(gray_image)
@@ -53,10 +59,12 @@ def filters_applier(raw_image):
     preprocessed_image = cv2.bitwise_not(thrs_image[1])
     preprocessed_image = cv2.dilate(preprocessed_image, np.ones((7, 7), np.uint8), iterations=2)
     resized_image = cv2.resize(preprocessed_image, IMAGE_DEFAULT_SIZE, interpolation=cv2.INTER_LINEAR)
-    #filter_test(raw_image, gray_image, equalized_image, thrs_image[1], preprocessed_image, resized_image)
     return resized_image
 
 def clean_board(warped):
+    """
+        Remove the game-grid from the board.
+    """
     rows, cols = warped.shape[:2]
     CELL_LENGTH = rows//9
     CELL_HEIGHT = cols//9
@@ -70,7 +78,6 @@ def clean_board(warped):
     thresh = cv2.adaptiveThreshold(inverted_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, -2)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     dilated_img = cv2.dilate(thresh, kernel, iterations=1)
-
 
     # Remove horizontal lines
     horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (CELL_LENGTH-1, 1))
@@ -103,6 +110,11 @@ def clean_board(warped):
 
 
 def zoomCells(warped):
+    """
+        Processes each cell of an image of a centred grid of a sudoku, in order to acquire the number
+        contained in the cell through the recognition model.
+        It returns an array with the n
+    """
     rows, cols = warped.shape[:2]
     cleaned_image = clean_board(warped)
     array_sudoku = []
@@ -127,14 +139,19 @@ def zoomCells(warped):
         array_sudoku.append(riga_sud)
     return array_sudoku
 
+
 def digits_rec(image_path):
+    """
+        Performs digit recognition on an input image using a pre-trained deep learning model. 
+        It preprocesses the image, applies the necessary transformations, and predicts the digit.
+    """
     MODEL_IMAGE_SIZE = (28,28)
     image = cv2.resize(image_path, MODEL_IMAGE_SIZE, interpolation=cv2.INTER_AREA)
 
-    # Applica le trasformazioni all'immagine
+    # Applies the transormations to the image
     transform = transforms.Compose([transforms.ToTensor()])
 
-    # Applica le trasformazioni e aggiunge una dimensione di batch
+    # Applies the transormations and adds batch-dimension
     image_tensor = transform(image).unsqueeze(0)
 
     image_tensor = image_tensor.to(device)
@@ -146,12 +163,18 @@ def digits_rec(image_path):
 
 
 def draw_canvas():
+    """
+    Creates an empty canvas to draw the new sudoku grid.
+    """
     SUDOKU_SIZE = 720
     canvas = np.zeros((SUDOKU_SIZE, SUDOKU_SIZE, 3), dtype='uint8')
     white_canvas = cv2.bitwise_not(canvas)
     return white_canvas
 
 def draw_empty_grid(partial_grid, grid_frames=1, margin=5):
+    """
+        Draws a brand new sudoku grid, following the standard structure of a sudoku.
+    """
     SUDOKU_SIZE = 720
     BLACK = (0, 0, 0)
     CELLS_PER_SIDE = 9
@@ -168,6 +191,10 @@ def draw_empty_grid(partial_grid, grid_frames=1, margin=5):
         return draw_empty_grid(partial_grid, grid_frames*3, margin//2)
 
 def color_selector(preset_digit):
+    """
+        Determines the color to use for drawing a Sudoku digit based on whether it is a 
+        preset digit (from the original puzzle) or a filled-in solution digit.
+    """
     GREEN = (12, 92, 13)
     BLACK = (0, 0, 0)
     EMPTY_CELL = int(0)
@@ -177,7 +204,10 @@ def color_selector(preset_digit):
         return BLACK
 
 def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
-
+    """
+        Overlays the solved Sudoku digits onto an empty grid, marking preset digits 
+        (from the original unsolved grid) and the solution digits distinctly.
+    """
     START_OFFSET = 4
     CELLS_PER_SIDE = 9
     HOR_OFFSET = 16
@@ -198,6 +228,10 @@ def fill_sudoku(empty_grid, solved_sudoku, unsolved_sudoku):
 
 
 def get_solved_sudoku(grid):
+    """
+        Attempts to solve a given Sudoku puzzle and returns the solved grid if successful. 
+        It also verifies the solution's validity and handles any exceptions during the process.
+    """
     try:
         empty_grid = draw_empty_grid(draw_canvas())
         sudoku = zoomCells(grid.warped)
@@ -214,17 +248,24 @@ def get_solved_sudoku(grid):
     except:
         return (None, False)
     
-    solved_sudoku = empty_grid #COMMENTARE PER TEST!!!!!!!!!!!!!
+    solved_sudoku = empty_grid 
     return (solved_sudoku, True)
 
 def is_valid(solved):
+    """
+        checks the validity of a Sudoku solution by verifying that 
+        each row and column contains unique elements.
+    """
     rowError = any(np.unique(row).size != row.size for row in solved)
     colError = any(np.unique(col).size != col.size for col in solved.T)
     return not rowError and not colError
 
 
 
-
+# def filter_test(*args):  TODO PER IMMAGINI RELAZIONE
+#     for img in args:
+#         cv2.imshow(f"{img}", img)
+#         cv2.waitKey(0)
 
 
 

@@ -2,6 +2,9 @@ import json
 from os import path
 
 class Language:
+    """
+        This class manages the current language used in the GUI.
+    """
     def __init__(self):
         self.curLang = "en"
         self.langMap = {}
@@ -21,6 +24,5 @@ class Language:
             self.curLang = 'it'
         else: 
             self.curLang = 'en'
-        #self.curLang = 'en' if self.curLang == 'it' else 'it'
         self.__updateLanguageMap()
 

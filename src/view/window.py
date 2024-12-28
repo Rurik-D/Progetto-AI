@@ -4,8 +4,7 @@ from os import path
 
 class Window:
     """
-        This class manage all the graphics options of
-        the window.
+        This class manage all the graphics options of the window.
     """
     def __init__(self, root):
         self.__dark_theme = True

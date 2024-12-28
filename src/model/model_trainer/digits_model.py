@@ -16,14 +16,18 @@ def read_csv(csv_file):
 
 
 def load_dataset(df):
-    def rinomina_dati(x):
+    """
+    Reads the DataFrame and and creates a dictionary whose keys are the paths
+    of each image and values are the corresponding labels for the image.
+    """
+    def rename_data(x):
         path_images = path.abspath(".") + f"\\dataset\\Printed digits\\dg_data"
         x = path.join(path_images, x)
         x = cv2.imread(x, 0)
         x = np.array(x, dtype="uint8")
         return x
     df.rename(columns={"filename":"data", "label":"labels"}, inplace=True)
-    df['data'] = df['data'].apply(rinomina_dati)
+    df['data'] = df['data'].apply(rename_data)
     
     data = df.to_dict("list")
     
@@ -57,11 +61,12 @@ class OurDataset(Dataset):
 
     def __getitem__(self, idx):
         
-        '''
-        It convert the image into a float32 format and
-        normalize the values in range from 0 to 1.
-        '''
+
         def normalize(image):
+            """
+                It convert the image into a float32 format and
+                normalize the values in range from 0 to 1.
+            """
             PIXELS_RANGE = 255
             image_float = image.astype(np.float32)
             image_norm = image_float / PIXELS_RANGE
@@ -72,19 +77,21 @@ class OurDataset(Dataset):
         
         return torch.tensor(image), torch.tensor(label)
     
-    '''
-    Returns the number of possible classes in labels.
-    '''
+
     def get_num_classes(self):
+        """
+            Returns the number of possible classes in labels.
+        """
         NUM_CLASSES = 10
         return NUM_CLASSES
 
 
-'''
-It creates the data loader, defining also the size of each batch to pass
-and the shuffling of the data.
-'''
+
 def create_dataloader(train, test, batch_size):
+    """
+        It creates the data loader, defining also the size of each batch to pass
+        and the shuffling of the data.
+    """
     
     train_dataloader = DataLoader(train,
                                   batch_size=batch_size,
@@ -97,24 +104,25 @@ def create_dataloader(train, test, batch_size):
     return train_dataloader, test_dataloader
 
 
-'''
-Initialize a model, composed of to main blocks:
-a convolutional part and an MLP part.
-In the convolutional part there are three convolutional blocks
-followed by a batch normalization, an activation function and
-a max pooling.
-In the MLP part there are three linear layer, respectively
-a first layer with 256 hidden units, a second one with 128 hidden
-units and a third one with 10 output units (the output classes);
-furthermore, both the first and second layer are followed by
-an activation function and a 50% dropout (in order to prevent overfitting).
-In the transition from the convolutional part to the MLP part,
-the multidimensional tensor produced by CNN is flattened, in order to
-make it an unidimensional vector.
-Hence the convulutional part extracts the features of the image,
-while the MLP part takes charge of the final classification.
-'''
+
 class OurCNN(nn.Module):
+    """
+        Initialize a model, composed of to main blocks:
+        a convolutional part and an MLP part.
+        In the convolutional part there are three convolutional blocks
+        followed by a batch normalization, an activation function and
+        a max pooling.
+        In the MLP part there are three linear layer, respectively
+        a first layer with 256 hidden units, a second one with 128 hidden
+        units and a third one with 10 output units (the output classes);
+        furthermore, both the first and second layer are followed by
+        an activation function and a 50% dropout (in order to prevent overfitting).
+        In the transition from the convolutional part to the MLP part,
+        the multidimensional tensor produced by CNN is flattened, in order to
+        make it an unidimensional vector.
+        Hence the convulutional part extracts the features of the image,
+        while the MLP part takes charge of the final classification.
+    """
     def __init__(self):
         super().__init__()
         
@@ -159,15 +167,15 @@ device = choose_device()
 model = OurCNN().to(device)
 
 
-'''
-It displays a rich report about the training process.
-For each amount of sample (modifiable through "update_freq")
-it displays the percentage of completion of an epoch, the current
-position in batch, the result of the loss function and an estimate
-of the reached accuracy.
 
-'''
 def display_train_process(batch, loss, X, y, pred, size, metric, update_freq=4):
+    """
+        It displays a rich report about the training process.
+        For each amount of sample (modifiable through "update_freq")
+        it displays the percentage of completion of an epoch, the current
+        position in batch, the result of the loss function and an estimate
+        of the reached accuracy.
+    """
     metric.update(pred, y)
     
     if batch % update_freq == 0:
@@ -183,14 +191,15 @@ def display_train_process(batch, loss, X, y, pred, size, metric, update_freq=4):
         print(f"Loss: {loss_value:>7f}\nAccuracy: {accuracy_perc}%\n")
     
 
-'''
-The train loop extracts the feature X and the labels y from the batch
-and modifies their dimensions to adapt them to the model.
-Then it calculates the loss function and uses it to apply a backpropagation
-of gradient. In the end, it updates the weights of gradient through
-the optimizer. Before computing the next epoch, it resets the gradients.
-'''
+
 def train_loop(dataloader,model,loss_fn,optimizer, metric,train_loader):
+    """
+        The train loop extracts the feature X and the labels y from the batch
+        and modifies their dimensions to adapt them to the model.
+        Then it calculates the loss function and uses it to apply a backpropagation
+        of gradient. In the end, it updates the weights of gradient through
+        the optimizer. Before computing the next epoch, it resets the gradients.
+    """
     size = len(train_loader.dataset)
     
     model.train()
@@ -222,12 +231,13 @@ def train_loop(dataloader,model,loss_fn,optimizer, metric,train_loader):
     metric.reset()
     
 
-'''
-The test loop extracts the feature X and the labels y from the batch
-and modifies their dimensions to adapt them to the model.
-Then it computes the prediction on model.
-'''
+
 def test_loop(dataloader, model, metric):
+    """
+        The test loop extracts the feature X and the labels y from the batch
+        and modifies their dimensions to adapt them to the model.
+        Then it computes the prediction on model.
+    """
     model.eval()
     metric.reset()
 
@@ -252,21 +262,17 @@ def test_loop(dataloader, model, metric):
     
     metric.reset()
 
-
-'''
-It saves the weights of the computed PyTorch model in a specified file.
-If "feedback" is set on True, it also displays a confirmation of the saving.
-'''
 def save_model(feedback=False):
-    torch.save(model.state_dict(),"digits_model.pth") # MOFICARE NOME FILE .PTH
+    """
+        It saves the weights of the computed PyTorch model in a specified file.
+        If "feedback" is set on True, it also displays a confirmation of the saving.
+    """
+    torch.save(model.state_dict(),"digits_model.pth")
     
     if feedback:
         print("Model saved")
 
-
-
-
-# Loading QMNIST Dataset
+# Loading Dataset
 def test_labels_data():
     data = load_dataset(read_csv(path.abspath(".") + f"\\dataset\\Printed digits\\our_digits.csv"))
 
@@ -276,7 +282,7 @@ def test_labels_data():
                                                                         test_size=0.2,
                                                                         random_state=42)
     return train_data, test_data, train_labels, test_labels
-# Loading customed QMNIST dataset
+
 
 def generate_model(train_data, test_data, train_labels, test_labels):
     train_dataset = OurDataset(train_data,train_labels)

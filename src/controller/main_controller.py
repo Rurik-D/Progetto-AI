@@ -17,7 +17,6 @@ class MainController:
         self.root = root
         self.wndMan = Window(root)
         self.wdgt = Widgets(root)
-        # self.scanEffect = ScannerEffect()
         self.lang = Language()
         self.selectedGrid = None
         self.solverThread = None
@@ -68,7 +67,6 @@ class MainController:
         self.wdgt.change_btn.configure(state="normal")
         self.wdgt.mainM_btn.configure(state="normal")
 
-        # self.scanEffect.scanning_switch(stop=True)
         self.wdgt.start_btn.place(relx=0.5, rely=0.45, anchor=ctk.CENTER)
         self.wdgt.settings_btn.place(relx=0.5, rely=0.6, anchor=ctk.CENTER)
         self.wdgt.exit_btn.place(relx=0.5, rely=0.75, anchor=ctk.CENTER)
@@ -95,7 +93,6 @@ class MainController:
         self.hideAllButtons()
         self.hideAllLabels()
         self.updateChoosenImageLabel(imgPath)
-        # self.scanEffect.setScannerLabels(self.wdgt.chosenImg_lbl)
         self.wdgt.chosenImg_lbl.place(relx=0.7, rely=0.5, anchor=ctk.CENTER)
         self.wdgt.solve_btn.place(relx=0.2, rely=0.35, anchor=ctk.CENTER)
         self.wdgt.change_btn.place(relx=0.2, rely=0.5, anchor=ctk.CENTER)
@@ -114,12 +111,11 @@ class MainController:
 
     def changeSudoku(self):
         """
-        
+            Open the file-explorer window, allowing to change the currently selected
+            image.
         """
         self.openChooseImageWindow()
-        # self.scanEffect.stop()
         self.runSolution = False
-        # self.solverThread.stop()
 
         self.wdgt.solve_btn.configure(state="normal")
         self.wdgt.change_btn.configure(state="normal")
@@ -135,7 +131,6 @@ class MainController:
             If the image is not a Sudoku, or the file is not an image, an error
             message appears.
         """
-        # self.scanEffect.scanning_switch(stop=True)
         file_path = filedialog.askopenfilename(title=self.lang.langMap['selectFile'])
        
         if file_path != "":
@@ -157,7 +152,6 @@ class MainController:
         self.wdgt.mainM_btn.configure(state="disabled")
         self.runSolution = True
 
-        # self.scanEffect.start()
 
         self.solverThread = Thread(target=self.solveAndUpdate)
         self.solverThread.start()
@@ -171,7 +165,6 @@ class MainController:
         if solvedTuple[1]:
             solvedSdk = solvedTuple[0]
             self.updateSudokuImageLabel(solvedSdk)
-            # self.scanEffect.stop()
 
         else:
             messagebox.showwarning(self.lang.langMap['err'], self.lang.langMap['sudokuError'])
@@ -221,7 +214,6 @@ class MainController:
         self.wdgt.solve_btn.configure(text=self.lang.langMap['solve'])
         self.wdgt.change_btn.configure(text=self.lang.langMap['change'])
         self.wdgt.mainM_btn.configure(text=self.lang.langMap['mainMenu'])
-        #self.wdgt.lang_btn.configure(text=self.lang.langMap['lang'])
 
     def updateChoosenImageLabel(self, imgPath:str):
         """

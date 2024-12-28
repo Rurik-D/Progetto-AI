@@ -4,6 +4,9 @@ from os import path
 IMAGES_PATH = path.abspath(".") + "\\src\\resources\\images\\"
 
 class Widgets:
+    """
+        This class creates all the widget used in the GUI.
+    """
     def __init__(self, root):
         self.root = root
         corner = 15

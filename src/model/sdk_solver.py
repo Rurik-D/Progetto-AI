@@ -2,15 +2,19 @@ import time
  
 
 def is_valid(board, row, col, num):
-    # Controlla se 'num' è già nella stessa riga
+    """
+        Checks whether a number (cannot) be inserted into a given grid cell (row, col) 
+        according to the Sudoku rules.
+    """
+    # Checks if 'num' is already in the line
     if num in board[row, :]:
         return False
     
-    # Controlla se 'num' è già nella stessa colonna
+    # Checks if 'num' is already in the column
     if num in board[:, col]:
         return False
     
-    # Controlla se 'num' è già nel quadrato 3x3
+    # Checks if 'num' is already in the 3x3 square
     start_row, start_col = 3 * (row // 3), 3 * (col // 3)
     if num in board[start_row:start_row+3, start_col:start_col+3]:
         return False
@@ -18,12 +22,18 @@ def is_valid(board, row, col, num):
     return True
 
 def solve_sudoku(board, timestart):
+    """
+        Solves Sudoku using backtracking. Find an empty cell and try to enter a number from 1 to 9. 
+        If a number can be entered without breaking the rules, the function calls itself recursively 
+        to solve the rest of the grid. If entering that number leads to a dead end, the number is 
+        removed and the next number is tried.
+    """
     empty = find_empty(board)
     if time.time() - timestart >= 30:
         return False 
     
     if empty is None:
-        return True  # Sudoku risolto
+        return True  
     row, col = empty
     
     for num in range(1, 10):
@@ -33,36 +43,19 @@ def solve_sudoku(board, timestart):
             if solve_sudoku(board, timestart):
                 return True
             
-            board[row, col] = 0  # Undo la scelta (backtracking)
-    
+            board[row, col] = 0 # Backtracking
     return False
 
 def find_empty(board):
+    """
+        finds an empty cell (denoted by 0) in the grid and returns its position as a tuple (row, col).
+        If there are no empty cells, returns None.
+    """
     for i in range(9):
         for j in range(9):
             if board[i, j] == 0:
-                return (i, j)  # Ritorna la posizione vuota
+                return (i, j)  # Returns the position of the empty cell
     return None
 
-
-
-'''
-is_valid(board, row, col, num): Questa funzione controlla se un numero (num) può essere inserito in una 
-                                determinata cella della griglia (row, col) rispettando le regole del Sudoku.
-
-solve_sudoku(board): Questa è la funzione principale che risolve il Sudoku usando il backtracking. 
-                     Trova una cella vuota e prova a inserire un numero da 1 a 9. 
-                     Se un numero può essere inserito senza violare le regole, 
-                     la funzione chiama sé stessa ricorsivamente per risolvere il resto della griglia. 
-                     Se inserire quel numero porta a un vicolo cieco, il numero viene rimosso 
-                     e si prova con il numero successivo.
-
-find_empty(board): Questa funzione trova una cella vuota (indicata con 0) nella griglia e restituisce 
-                   la sua posizione come una tupla (row, col). 
-                   Se non ci sono celle vuote, restituisce None.
-
-print_board(board): Questa funzione stampa la griglia del Sudoku in un formato leggibile.
-
-'''
 
 
