@@ -42,7 +42,9 @@ def BGR2GRAY_selective(image):
 
 def clahe_equalizer(image):
     """
-         applies CLAHE to locally set the contrast of an input grayscale image.
+         Applies a Contrast Limited Adaptive Histogram Equalization (CLAHE),
+         in order to amplify (without an overamplification of the noise)
+         the contrast in the image, enhancing the definitions of edges.
     """
     clahe = cv2.createCLAHE(clipLimit=6.0, tileGridSize=(9,9))
     image = clahe.apply(image)
@@ -50,7 +52,15 @@ def clahe_equalizer(image):
 
 def filters_applier(raw_image):
     """
-        Applies the filter to the raw image.
+        Processes the image, through filters and trasformations,
+        so that the usability of the raw image is maximixed.
+        Filters and trasformation applied:
+            - greyscale conversion
+            - CLAHE
+            - thresholding
+            - bitwise complement
+            - dilation
+            - resize
     """
     IMAGE_DEFAULT_SIZE = (200, 200)
     gray_image = BGR2GRAY_selective(raw_image)
@@ -63,47 +73,47 @@ def filters_applier(raw_image):
 
 def clean_board(warped):
     """
-        Remove the game-grid from the board.
+        Removes the game-grid from the board,
+        in order to simplify the subsequent number in cell recognition.
     """
     rows, cols = warped.shape[:2]
     CELL_LENGTH = rows//9
     CELL_HEIGHT = cols//9
 
-    # Invert the image
+    # Image greyscale convertion and negation
     warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
-    
     inverted_image = cv2.bitwise_not(warped)
 
-    # Apply adaptive thresholding to make the grid lines more pronounced
+    # Adaptive thresholding to make the grid lines more pronounced
     thresh = cv2.adaptiveThreshold(inverted_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, -2)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     dilated_img = cv2.dilate(thresh, kernel, iterations=1)
 
-    # Remove horizontal lines
+    # Horizontal lines removal
     horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (CELL_LENGTH-1, 1))
     detect_horizontal = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, horizontal_kernel, iterations=3)
 
-    # Remove vertical lines
+    # Vertical lines removal
     vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, CELL_HEIGHT-1))
     detect_vertical = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, vertical_kernel, iterations=3)
 
-    # Combine the horizontal and vertical lines
+    # Horizontal and vertical lines combination
     grid_lines = cv2.add(detect_horizontal, detect_vertical)
 
-    # Invert grid lines to create a mask
+    # Grid lines negation to create a mask
     mask = cv2.bitwise_not(grid_lines)
 
-    # Use the mask to remove lines from the original inverted image
+    # Removal of the grid lines from the original image (by mask)
     result = cv2.bitwise_and(inverted_image, mask)
 
-    # Apply additional morphological operations to clean up the image
+    # Image morphologically closed to clean up the result
     kernel = np.ones((3, 3), np.uint8)
     cleaned_result = cv2.morphologyEx(result, cv2.MORPH_CLOSE, kernel)
 
-    # Invert the result back to original grayscale
+    # Final image negation
     final_result = cv2.bitwise_not(cleaned_result)
 
-    # Optionally, apply blurring to further smooth the result
+    # Median filter application to further smooth the image
     final_result = cv2.medianBlur(final_result, 3)
 
     return final_result
@@ -113,7 +123,7 @@ def zoomCells(warped):
     """
         Processes each cell of an image of a centred grid of a sudoku, in order to acquire the number
         contained in the cell through the recognition model.
-        It returns an array with the n
+        It returns a matrix representative of the sudoku contained in the original image.
     """
     rows, cols = warped.shape[:2]
     cleaned_image = clean_board(warped)
@@ -259,13 +269,5 @@ def is_valid(solved):
     rowError = any(np.unique(row).size != row.size for row in solved)
     colError = any(np.unique(col).size != col.size for col in solved.T)
     return not rowError and not colError
-
-
-
-# def filter_test(*args):  TODO PER IMMAGINI RELAZIONE
-#     for img in args:
-#         cv2.imshow(f"{img}", img)
-#         cv2.waitKey(0)
-
 
 
