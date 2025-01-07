@@ -77,8 +77,8 @@ def clean_board(warped):
         in order to simplify the subsequent number in cell recognition.
     """
     rows, cols = warped.shape[:2]
-    CELL_LENGTH = rows//9
-    CELL_HEIGHT = cols//9
+    cell_length = rows//9
+    cell_height = cols//9
 
     # Image greyscale convertion and negation
     warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
@@ -90,11 +90,11 @@ def clean_board(warped):
     dilated_img = cv2.dilate(thresh, kernel, iterations=1)
 
     # Horizontal lines removal
-    horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (CELL_LENGTH-1, 1))
+    horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (cell_length-1, 1))
     detect_horizontal = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, horizontal_kernel, iterations=3)
 
     # Vertical lines removal
-    vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, CELL_HEIGHT-1))
+    vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, cell_height-1))
     detect_vertical = cv2.morphologyEx(dilated_img, cv2.MORPH_OPEN, vertical_kernel, iterations=3)
 
     # Horizontal and vertical lines combination
@@ -129,16 +129,16 @@ def zoomCells(warped):
     cleaned_image = clean_board(warped)
     array_sudoku = []
     
-    ROW_SIZE = rows-rows//9
-    CELL_LENGTH = rows//9
-    COL_SIZE = cols-cols//9
-    CELL_HEIGHT = cols//9
+    row_size = rows-rows//9
+    cell_length = rows//9
+    col_size = cols-cols//9
+    cell_height = cols//9
     
     ZOOM_LEVEL = 9
-    for x in range(0, ROW_SIZE+1, CELL_LENGTH):
+    for x in range(0, row_size+1, cell_length):
         riga_sud = []
         X_traslation = -x*ZOOM_LEVEL
-        for y in range(0, COL_SIZE+1, CELL_HEIGHT):
+        for y in range(0, col_size+1, cell_height):
             
             Y_traslation = -y*ZOOM_LEVEL
             M = np.float32([[ZOOM_LEVEL, 0, Y_traslation], [0, ZOOM_LEVEL, X_traslation]])
